@@ -1,0 +1,26 @@
+name: vector_bank_mobile
+description: Мобильный клиент «Вектор Банк» с подхватом сессии (Seamless Handoff)
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  http: ^1.2.2
+  web_socket_channel: ^3.0.1
+  mobile_scanner: ^5.2.3
+  local_auth: ^2.3.0
+  flutter_secure_storage: ^9.2.2
+  intl: ^0.19.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true

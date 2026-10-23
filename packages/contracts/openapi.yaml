@@ -1,0 +1,484 @@
+openapi: 3.1.0
+info:
+  title: Seamless Banking API
+  version: 1.0.0
+  description: >
+    Прототип API бесшовного перехода между веб- и мобильным банковским
+    приложением. Демонстрационный контур: реальные персональные данные
+    не обрабатываются.
+servers:
+  - url: http://localhost:8787
+    description: Локальный запуск
+tags:
+  - name: auth
+  - name: drafts
+  - name: handoff
+  - name: observability
+
+paths:
+  /v1/auth/demo-login:
+    post:
+      tags: [auth]
+      summary: Демонстрационный вход
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [channel]
+              properties:
+                phone: { type: string, example: "+7 900 000-00-42" }
+                channel: { type: string, enum: [web, mobile] }
+                deviceId: { type: string, example: "web_ab12cd34" }
+                deviceName: { type: string, example: "Chrome · macOS" }
+      responses:
+        "200":
+          description: Токен доступа и сессия
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  expiresIn: { type: integer, example: 3600 }
+                  user: { $ref: "#/components/schemas/User" }
+                  session: { $ref: "#/components/schemas/Session" }
+
+  /v1/auth/step-up:
+    post:
+      tags: [auth]
+      summary: Повышение уровня аутентификации
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method, proof]
+              properties:
+                method: { type: string, enum: [biometric, pin] }
+                proof: { type: string, minLength: 4 }
+      responses:
+        "200":
+          description: Новый токен с уровнем 2
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  authLevel: { type: integer, enum: [2] }
+                  token: { type: string }
+
+  /v1/me:
+    get:
+      tags: [auth]
+      summary: Профиль и текущая сессия
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Профиль
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { $ref: "#/components/schemas/User" }
+                  session: { $ref: "#/components/schemas/Session" }
+                  stats: { type: object }
+
+  /v1/drafts:
+    post:
+      tags: [drafts]
+      summary: Создать черновик перевода
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201":
+          description: Черновик создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draft: { $ref: "#/components/schemas/Draft" }
+    get:
+      tags: [drafts]
+      summary: Список операций пользователя
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Список
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/DraftSummary" }
+
+  /v1/drafts/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string }
+    get:
+      tags: [drafts]
+      summary: Получить черновик
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: Черновик
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draft: { $ref: "#/components/schemas/Draft" }
+    patch:
+      tags: [drafts]
+      summary: Сохранить поля и контекст (идемпотентно по версии)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                baseVersion: { type: integer }
+                step: { type: integer, minimum: 1, maximum: 3 }
+                fields: { $ref: "#/components/schemas/TransferFields" }
+                context: { $ref: "#/components/schemas/DraftContext" }
+      responses:
+        "200":
+          description: Обновленный черновик
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draft: { $ref: "#/components/schemas/Draft" }
+        "409":
+          description: Конфликт версии или удержание lease
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  /v1/drafts/{id}/claim:
+    post:
+      tags: [drafts]
+      summary: Вернуть управление черновиком на текущее устройство
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lease передан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draft: { $ref: "#/components/schemas/Draft" }
+
+  /v1/drafts/{id}/submit:
+    post:
+      tags: [drafts]
+      summary: Отправить перевод
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Перевод исполнен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draft: { $ref: "#/components/schemas/Draft" }
+                  receipt: { $ref: "#/components/schemas/Receipt" }
+        "422":
+          description: Не заполнены обязательные поля
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorEnvelope" }
+
+  /v1/handoff/ticket:
+    post:
+      tags: [handoff]
+      summary: Выпустить одноразовый билет перехода
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [opId]
+              properties:
+                opId: { type: string }
+      responses:
+        "201":
+          description: Билет, QR и код ручного ввода
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticket: { type: string }
+                  ticketId: { type: string }
+                  code: { type: string, pattern: "^\\d{6}$" }
+                  expiresAt: { type: string, format: date-time }
+                  ttlSec: { type: integer, example: 90 }
+                  deeplink: { type: string }
+                  qrSvg:
+                    type: string
+                    description: data URI с SVG QR-кодом
+
+  /v1/handoff/preview:
+    post:
+      tags: [handoff]
+      summary: Предпросмотр операции по билету
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket: { type: string }
+                code: { type: string }
+      responses:
+        "200":
+          description: Краткие данные операции
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  preview: { $ref: "#/components/schemas/TicketPreview" }
+
+  /v1/handoff/redeem:
+    post:
+      tags: [handoff]
+      summary: Погасить билет и получить черновик
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticket: { type: string }
+                code: { type: string }
+                deviceId: { type: string }
+                deviceName: { type: string }
+      responses:
+        "200":
+          description: Черновик передан мобильному устройству
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  draft: { $ref: "#/components/schemas/Draft" }
+                  handoff: { type: object }
+                  restored: { type: object }
+        "403":
+          description: Не пройден step-up или чужой билет
+        "409":
+          description: Билет использован или истёк
+
+  /v1/handoff/{jti}/status:
+    get:
+      tags: [handoff]
+      summary: Статус билета (polling-фолбэк)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: jti
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Статус
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [pending, redeemed, expired] }
+                  redeemedBy: { type: string }
+
+  /v1/health:
+    get:
+      tags: [observability]
+      summary: Проверка работоспособности
+      responses:
+        "200":
+          description: OK
+
+  /v1/metrics:
+    get:
+      tags: [observability]
+      summary: Метрики прототипа
+      responses:
+        "200":
+          description: Счетчики и перцентили задержек
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  store: { type: string, enum: [memory, redis] }
+                  counters: { type: object }
+                  syncLatencyMs: { $ref: "#/components/schemas/Latency" }
+                  handoffLatencyMs: { $ref: "#/components/schemas/Latency" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Latency:
+      type: object
+      properties:
+        count: { type: integer }
+        p50: { type: number, nullable: true }
+        p95: { type: number, nullable: true }
+        p99: { type: number, nullable: true }
+        max: { type: number, nullable: true }
+
+    Session:
+      type: object
+      properties:
+        sid: { type: string }
+        channel: { type: string, enum: [web, mobile] }
+        deviceId: { type: string }
+        deviceName: { type: string }
+        authLevel: { type: integer, enum: [1, 2] }
+
+    User:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        segment: { type: string }
+        accounts:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: string }
+              title: { type: string }
+              masked: { type: string }
+              balance: { type: number }
+              currency: { type: string }
+
+    TransferFields:
+      type: object
+      properties:
+        recipientName: { type: string, maxLength: 120 }
+        recipientBank: { type: string, maxLength: 120 }
+        recipientAccount: { type: string, maxLength: 34 }
+        amount: { type: string, maxLength: 18 }
+        currency: { type: string, default: RUB }
+        purpose: { type: string, maxLength: 180 }
+        fee: { type: string }
+        saveTemplate: { type: boolean }
+
+    DraftContext:
+      type: object
+      properties:
+        focus: { type: string }
+        caret: { type: integer }
+        scroll: { type: number }
+        validation: { type: object }
+        a11y:
+          type: object
+          properties:
+            fontScale: { type: number }
+            contrast: { type: string, enum: [normal, high] }
+            reduceMotion: { type: boolean }
+        locale: { type: string }
+
+    Draft:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string, enum: [draft, submitted] }
+        version: { type: integer }
+        step: { type: integer }
+        totalSteps: { type: integer }
+        fields: { $ref: "#/components/schemas/TransferFields" }
+        context: { $ref: "#/components/schemas/DraftContext" }
+        canEdit: { type: boolean }
+        leaseActive: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+        updatedBy:
+          type: object
+          properties:
+            deviceId: { type: string }
+            deviceName: { type: string }
+            channel: { type: string }
+        handoff: { type: object, nullable: true }
+        receipt: { $ref: "#/components/schemas/Receipt" }
+
+    DraftSummary:
+      type: object
+      properties:
+        id: { type: string }
+        status: { type: string }
+        step: { type: integer }
+        version: { type: integer }
+        recipientName: { type: string }
+        amount: { type: string }
+        updatedAt: { type: string }
+
+    TicketPreview:
+      type: object
+      properties:
+        opId: { type: string }
+        ownerName: { type: string }
+        recipientName: { type: string }
+        recipientBank: { type: string }
+        amount: { type: string }
+        step: { type: integer }
+        totalSteps: { type: integer }
+
+    Receipt:
+      type: object
+      properties:
+        id: { type: string }
+        executedAt: { type: string, format: date-time }
+        amount: { type: number }
+        currency: { type: string }
+        recipientName: { type: string }
+        recipientAccount: { type: string }
+
+    ErrorEnvelope:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code: { type: string, example: LEASE_HELD }
+            message: { type: string }
+            details: { type: object }

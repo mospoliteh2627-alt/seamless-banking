@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Вектор Банк — панель исследования</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/research.css" />
+  </head>
+  <body>
+    <header class="r-topbar">
+      <a class="r-brand" href="/">
+        <span class="r-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
+            <path d="M6 22 16 6l10 16-10 4-10-4Z" fill="currentColor" opacity=".92" />
+            <path d="M11 21.2 16 12l5 9.2-5 2-5-2Z" fill="#0b1f3a" />
+          </svg>
+        </span>
+        <span>Вектор<span class="r-dim">банк</span></span>
+      </a>
+      <span class="r-pill">research mode</span>
+      <a class="r-link" href="/">← В интернет-банк</a>
+      <a class="r-link" href="/admin">Админ-контур</a>
+    </header>
+
+    <main class="r-main">
+      <section class="r-hero">
+        <div>
+          <p class="r-eyebrow">Магистерское исследование · 09.04.02</p>
+          <h1>Бесшовный переход:<br /><span>измеримая эффективность</span></h1>
+          <p class="r-lead">Имитационный эксперимент, метрики UX и проверка гипотез. Данные обновляются после каждого измерения.</p>
+          <div class="r-hero-actions">
+            <button class="r-btn r-btn-primary" id="scroll-experiment">Провести измерение</button>
+            <button class="r-btn r-btn-ghost" id="export-research">Экспорт CSV</button>
+          </div>
+        </div>
+        <div class="r-hero-badge">
+          <span>48</span>
+          <small>синтетических профилей</small>
+          <span>17 280</span>
+          <small>наблюдений</small>
+          <span>3</span>
+          <small>условия</small>
+        </div>
+      </section>
+
+      <section class="r-kpis" id="kpis"></section>
+
+      <section class="r-grid">
+        <article class="r-card r-chart-card">
+          <div class="r-card-head">
+            <h2>Время выполнения задачи</h2>
+            <span class="r-muted">секунды, среднее</span>
+          </div>
+          <div class="r-bars" id="tct-bars"></div>
+          <p class="r-note">A — бесшовный переход, B — повторный ввод, C — только web.</p>
+        </article>
+
+        <article class="r-card r-effect-card">
+          <p class="r-eyebrow">Эффект A к B</p>
+          <div class="r-effect" id="effect">—</div>
+          <p class="r-muted" id="effect-ci">—</p>
+          <div class="r-metrics" id="effect-metrics"></div>
+        </article>
+      </section>
+
+      <section class="r-card">
+        <div class="r-card-head">
+          <h2>Гипотезы</h2>
+          <span class="r-muted">H1–H6</span>
+        </div>
+        <div class="r-hypotheses" id="hypotheses"></div>
+      </section>
+
+      <section class="r-grid r-experiment-grid" id="experiment">
+        <article class="r-card">
+          <div class="r-card-head">
+            <h2>Провести измерение</h2>
+            <span class="r-pill r-pill-soft" id="session-count">0 сессий</span>
+          </div>
+          <form id="experiment-form" class="r-form">
+            <label>Условие
+              <select id="condition">
+                <option value="A">A — бесшовный переход</option>
+                <option value="B">B — повторный ввод</option>
+                <option value="C">C — только web</option>
+              </select>
+            </label>
+            <div class="r-timer">
+              <span id="timer">00:00.0</span>
+              <button type="button" class="r-btn r-btn-primary" id="timer-toggle">Старт</button>
+            </div>
+            <div class="r-row">
+              <label>Ошибки<input id="errors" type="number" min="0" max="50" value="0" /></label>
+              <label>SUS, 0–100<input id="sus" type="number" min="0" max="100" placeholder="—" /></label>
+              <label>CES, 1–7<input id="ces" type="number" min="1" max="7" step="0.1" placeholder="—" /></label>
+            </div>
+            <label>Участник<input id="participant" placeholder="P-001" /></label>
+            <label class="r-check"><input id="completed" type="checkbox" checked /> Операция завершена</label>
+            <button type="submit" class="r-btn r-btn-primary" id="save-session">Сохранить результат</button>
+          </form>
+          <p class="r-note">Демо-режим: данные хранятся в контуре прототипа и используются для агрегатов.</p>
+        </article>
+
+        <article class="r-card">
+          <div class="r-card-head">
+            <h2>Агрегаты</h2>
+            <span class="r-muted">по сохранённым сессиям</span>
+          </div>
+          <div id="aggregate" class="r-aggregate"></div>
+          <div class="r-table-wrap">
+            <table class="r-table">
+              <thead><tr><th>Сессия</th><th>Условие</th><th>TCT</th><th>SUS</th><th>CES</th></tr></thead>
+              <tbody id="sessions"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="r-card">
+        <div class="r-card-head">
+          <h2>Метрики исследования</h2>
+          <span class="r-muted">M1–M38 · выборочно</span>
+        </div>
+        <div class="r-metric-grid" id="metrics"></div>
+      </section>
+
+      <section class="r-card r-method">
+        <div class="r-card-head"><h2>Как устроен эксперимент</h2></div>
+        <div class="r-steps">
+          <div><span>01</span><strong>Профиль</strong><p>48 синтетических профилей с разной скоростью ввода и вероятностью ошибки.</p></div>
+          <div><span>02</span><strong>Условия</strong><p>A / B / C, 120 повторов, парный дизайн.</p></div>
+          <div><span>03</span><strong>Метрики</strong><p>TCT, ошибки, завершаемость, SUS, CES, CRR, p95.</p></div>
+          <div><span>04</span><strong>Вывод</strong><p>Парный тест, bootstrap-интервалы, размер эффекта d_z.</p></div>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast" class="r-toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/research.js"></script>
+  </body>
+</html>

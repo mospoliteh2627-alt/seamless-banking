@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1f3a" />
+    <meta name="description" content="Демонстрационный интернет-банк с бесшовным переходом между веб- и мобильным приложением" />
+    <title>Вектор Банк — интернет-банк</title>
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="ambient" aria-hidden="true">
+      <span class="orb orb-a"></span>
+      <span class="orb orb-b"></span>
+    </div>
+
+    <!-- ЭКРАН ВХОДА -->
+    <section id="view-login" class="view view-login">
+      <div class="login-card">
+        <a class="brand" href="/" aria-label="Векторбанк">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="32" height="32" fill="none">
+              <path d="M6 22 16 6l10 16-10 4-10-4Z" fill="currentColor" opacity=".9" />
+              <path d="M11 21.2 16 12l5 9.2-5 2-5-2Z" fill="#0b1f3a" />
+            </svg>
+          </span>
+          <span class="brand-name">Вектор<span>банк</span></span>
+        </a>
+
+        <h1>Вход в интернет-банк</h1>
+        <p class="lead">Демонстрационный контур. Персональные данные не используются.</p>
+
+        <form id="login-form" class="form" novalidate>
+          <label class="field">
+            <span>Телефон</span>
+            <input id="login-phone" name="phone" type="tel" value="+7 900 000-00-42" autocomplete="tel" required />
+          </label>
+          <label class="field">
+            <span>Код доступа</span>
+            <input id="login-code" name="code" type="password" value="0000" inputmode="numeric" autocomplete="one-time-code" required />
+          </label>
+          <button class="btn btn-primary btn-block" type="submit" id="login-submit">Войти</button>
+          <p class="hint">Демо-режим: код <strong>0000</strong>, любые последние цифры телефона.</p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ПРИЛОЖЕНИЕ -->
+    <div id="view-app" class="view hidden">
+      <header class="topbar">
+        <a class="brand brand-small" href="/" aria-label="Векторбанк">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
+              <path d="M6 22 16 6l10 16-10 4-10-4Z" fill="currentColor" opacity=".9" />
+              <path d="M11 21.2 16 12l5 9.2-5 2-5-2Z" fill="#0b1f3a" />
+            </svg>
+          </span>
+          <span class="brand-name">Вектор<span>банк</span></span>
+        </a>
+
+        <nav class="topnav" aria-label="Основная навигация">
+          <button class="nav-link is-active" type="button" data-go="dashboard">Счета</button>
+          <button class="nav-link" type="button" data-go="transfer">Платежи</button>
+          <button class="nav-link" type="button" data-go="history">История</button>
+          <a class="nav-link" href="/research">Исследование</a>
+        </nav>
+
+        <button class="icon-btn a11y-btn" type="button" id="btn-a11y" title="Настройки доступности" aria-label="Настройки доступности">
+          <span aria-hidden="true">Aa</span>
+        </button>
+
+        <div class="user-chip">
+          <span class="avatar" id="user-avatar" aria-hidden="true">АС</span>
+          <span class="user-meta">
+            <span class="user-name" id="user-name">Анна Смирнова</span>
+            <span class="user-segment" id="user-segment">Premium</span>
+          </span>
+          <button class="icon-btn" type="button" id="btn-logout" title="Выйти" aria-label="Выйти">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main class="page">
+        <!-- ГЛАВНЫЙ ЭКРАН -->
+        <section id="screen-dashboard" class="screen">
+          <div class="hello">
+            <div>
+              <p class="eyebrow" id="today">Сегодня</p>
+              <h1>Здравствуйте, <span id="hello-name">Анна</span></h1>
+              <p class="muted">Все каналы синхронизированы. Начните операцию на компьютере и продолжите на телефоне.</p>
+            </div>
+            <button class="btn btn-primary" type="button" id="btn-new-transfer">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              Новый перевод
+            </button>
+          </div>
+
+          <article class="card process-map" id="process-map">
+            <div class="card-head">
+              <span class="card-label">Бизнес-процесс</span>
+              <span class="badge badge-soft" id="process-total">0 операций</span>
+            </div>
+            <div class="process-lanes">
+              <div class="process-stage" data-stage="0"><span class="stage-dot"></span><strong>Создана</strong><small id="stage-count-0">0</small></div>
+              <div class="process-stage" data-stage="1"><span class="stage-dot"></span><strong>Заполнение</strong><small id="stage-count-1">0</small></div>
+              <div class="process-stage" data-stage="2"><span class="stage-dot"></span><strong>Подтверждение</strong><small id="stage-count-2">0</small></div>
+              <div class="process-stage" data-stage="3"><span class="stage-dot"></span><strong>Переход</strong><small id="stage-count-3">0</small></div>
+              <div class="process-stage" data-stage="4"><span class="stage-dot"></span><strong>Исполнена</strong><small id="stage-count-4">0</small></div>
+            </div>
+          </article>
+
+          <div class="dashboard-grid">
+            <article class="card account-card">
+              <div class="card-head">
+                <span class="card-label">Текущий счёт</span>
+                <span class="badge badge-soft">RUB</span>
+              </div>
+              <p class="account-balance"><span id="balance-int">128 450</span><span class="cents" id="balance-cents">,75 ₽</span></p>
+              <p class="account-number" id="account-mask">•• 4417</p>
+              <div class="account-actions">
+                <button class="chip" type="button" data-quick="transfer">Перевести</button>
+                <button class="chip" type="button" data-quick="requisites">Реквизиты</button>
+                <button class="chip" type="button" data-quick="statement">Выписка</button>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="card-head">
+                <span class="card-label">Карта</span>
+                <span class="badge">МИР</span>
+              </div>
+              <p class="card-number">•• 7712</p>
+              <p class="muted small">Действует до 09/28</p>
+              <div class="card-limit">
+                <span>Лимит на переводы</span>
+                <strong>500 000 ₽ / день</strong>
+              </div>
+            </article>
+
+            <article class="card quick-card">
+              <div class="card-head">
+                <span class="card-label">Быстрые действия</span>
+              </div>
+              <div class="quick-grid">
+                <button class="quick" type="button" data-quick="transfer">
+                  <span class="quick-icon">→</span>
+                  <span>Перевод</span>
+                </button>
+                <button class="quick" type="button" data-quick="autopay">
+                  <span class="quick-icon">↻</span>
+                  <span>Автоплатёж</span>
+                </button>
+                <button class="quick" type="button" data-quick="invoice">
+                  <span class="quick-icon">₽</span>
+                  <span>Счёт</span>
+                </button>
+                <button class="quick" type="button" data-quick="support">
+                  <span class="quick-icon">?</span>
+                  <span>Помощь</span>
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <article class="card">
+            <div class="card-head">
+              <span class="card-label">Незавершённые операции</span>
+              <span class="badge badge-soft" id="drafts-count">0</span>
+            </div>
+            <ul class="draft-list" id="draft-list">
+              <li class="empty">Пока нет незавершённых операций</li>
+            </ul>
+          </article>
+        </section>
+
+        <!-- ПЕРЕВОД -->
+        <section id="screen-transfer" class="screen hidden">
+          <div class="transfer-head">
+            <button class="icon-btn" type="button" id="btn-back" aria-label="Назад">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <div>
+              <p class="eyebrow">Платёж</p>
+              <h1>Перевод по реквизитам</h1>
+            </div>
+            <div class="save-indicator" id="save-status" role="status" aria-live="polite">
+              <span class="dot"></span>
+              <span class="save-text">Черновик не сохранён</span>
+            </div>
+          </div>
+
+          <div class="transfer-layout">
+            <div class="card transfer-card">
+              <ol class="steps" id="steps">
+                <li class="step is-active" data-step="1"><span class="step-num">1</span><span>Получатель</span></li>
+                <li class="step" data-step="2"><span class="step-num">2</span><span>Сумма</span></li>
+                <li class="step" data-step="3"><span class="step-num">3</span><span>Подтверждение</span></li>
+              </ol>
+
+              <form id="transfer-form" class="form" novalidate>
+                <fieldset class="step-panel" data-panel="1">
+                  <legend class="sr-only">Данные получателя</legend>
+                  <div class="recipient-picks hidden" id="recipient-picks">
+                    <div class="recipient-picks-head">
+                      <span>Избранные получатели</span>
+                      <small>Сохранены в вашем профиле</small>
+                    </div>
+                    <div class="recipient-chips" id="recipient-chips"></div>
+                  </div>
+                  <label class="field">
+                    <span>Имя получателя</span>
+                    <input id="f-recipientName" name="recipientName" type="text" placeholder="Иван Петров" autocomplete="off" />
+                  </label>
+                  <label class="field">
+                    <span>Банк получателя</span>
+                    <input id="f-recipientBank" name="recipientBank" type="text" placeholder="Вектор Банк" autocomplete="off" />
+                  </label>
+                  <label class="field">
+                    <span>Счёт получателя</span>
+                    <input id="f-recipientAccount" name="recipientAccount" type="text" inputmode="numeric" placeholder="40817 810 0 0000 0000000" autocomplete="off" />
+                  </label>
+                  <div class="form-actions">
+                    <button class="btn btn-primary" type="button" data-next="2">Далее</button>
+                  </div>
+                </fieldset>
+
+                <fieldset class="step-panel hidden" data-panel="2">
+                  <legend class="sr-only">Параметры перевода</legend>
+                  <label class="field">
+                    <span>Сумма</span>
+                    <div class="amount-input">
+                      <input id="f-amount" name="amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off" />
+                      <span class="currency">₽</span>
+                    </div>
+                  </label>
+                  <label class="field">
+                    <span>Назначение платежа</span>
+                    <input id="f-purpose" name="purpose" type="text" maxlength="180" placeholder="Перевод личных средств" autocomplete="off" />
+                  </label>
+                  <label class="toggle">
+                    <input id="f-saveRecipient" name="saveRecipient" type="checkbox" />
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span>Сохранить получателя в избранное</span>
+                  </label>
+                  <div class="fee-row">
+                    <span>Комиссия</span>
+                    <strong id="fee-value">0 ₽</strong>
+                  </div>
+                  <div class="form-actions form-actions-split">
+                    <button class="btn btn-ghost" type="button" data-prev="1">Назад</button>
+                    <button class="btn btn-primary" type="button" data-next="3">К подтверждению</button>
+                  </div>
+                </fieldset>
+
+                <fieldset class="step-panel hidden" data-panel="3">
+                  <legend class="sr-only">Подтверждение перевода</legend>
+                  <dl class="summary">
+                    <div><dt>Получатель</dt><dd id="s-recipient">—</dd></div>
+                    <div><dt>Банк</dt><dd id="s-bank">—</dd></div>
+                    <div><dt>Счёт</dt><dd id="s-account">—</dd></div>
+                    <div><dt>Назначение</dt><dd id="s-purpose">—</dd></div>
+                    <div class="summary-total"><dt>Сумма</dt><dd id="s-amount">0 ₽</dd></div>
+                  </dl>
+                  <label class="toggle">
+                    <input id="f-agreement" type="checkbox" />
+                    <span class="toggle-track" aria-hidden="true"></span>
+                    <span>Подтверждаю условия перевода</span>
+                  </label>
+                  <div class="form-actions form-actions-split">
+                    <button class="btn btn-ghost" type="button" data-prev="2">Назад</button>
+                    <button class="btn btn-primary" type="button" id="btn-submit">Перевести</button>
+                  </div>
+                </fieldset>
+              </form>
+            </div>
+
+            <aside class="transfer-aside">
+              <div class="card process-card">
+                <div class="card-head">
+                  <span class="card-label">Процесс операции</span>
+                  <span class="badge" id="process-risk">—</span>
+                </div>
+                <ol class="timeline" id="process-timeline"></ol>
+                <div class="process-meta">
+                  <span id="process-sla">—</span>
+                  <span id="process-stage-label">—</span>
+                </div>
+              </div>
+
+              <div class="card sync-card">
+                <div class="card-head">
+                  <span class="card-label">Синхронизация</span>
+                  <span class="badge badge-live" id="ws-badge"><span class="pulse"></span> online</span>
+                </div>
+                <p class="muted small" id="sync-device">Это устройство: Браузер</p>
+                <p class="save-time" id="save-time">Изменения сохраняются автоматически</p>
+                <button class="btn btn-secondary btn-block" type="button" id="btn-handoff">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <rect x="7" y="2.5" width="10" height="19" rx="2.5" />
+                    <path d="M10.5 18.5h3" />
+                  </svg>
+                  Продолжить на телефоне
+                </button>
+                <button class="btn btn-ghost btn-block hidden" type="button" id="btn-claim">Вернуть управление</button>
+                <p class="hint" id="handoff-hint">Откроется QR-код. Отсканируйте его камерой телефона — черновик, шаг и курсор перейдут в приложение.</p>
+              </div>
+
+              <div class="card handoff-state hidden" id="handoff-banner" role="status">
+                <span class="handoff-icon">→</span>
+                <div>
+                  <strong id="handoff-banner-title">Операция продолжена на телефоне</strong>
+                  <p class="muted small" id="handoff-banner-text">Форма доступна только для просмотра.</p>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </section>
+
+        <!-- УСПЕХ -->
+        <section id="screen-success" class="screen hidden">
+          <div class="card success-card">
+            <div class="success-mark" aria-hidden="true">
+              <svg viewBox="0 0 48 48" width="48" height="48" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M12 25l8 8 16-18" />
+              </svg>
+            </div>
+            <h2>Перевод отправлен</h2>
+            <p class="muted" id="success-subtitle">Деньги поступят в течение нескольких минут.</p>
+            <dl class="summary summary-success">
+              <div><dt>Получатель</dt><dd id="r-recipient">—</dd></div>
+              <div><dt>Сумма</dt><dd id="r-amount">—</dd></div>
+              <div><dt>Номер операции</dt><dd id="r-id">—</dd></div>
+              <div><dt>Дата</dt><dd id="r-date">—</dd></div>
+            </dl>
+            <div class="form-actions form-actions-split">
+              <button class="btn btn-ghost" type="button" id="btn-success-home">На главную</button>
+              <button class="btn btn-primary" type="button" id="btn-success-new">Новый перевод</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- МОДАЛЬНОЕ ОКНО QR -->
+    <div class="modal hidden" id="handoff-modal" role="dialog" aria-modal="true" aria-labelledby="handoff-title">
+      <div class="modal-backdrop" data-close-modal></div>
+      <div class="modal-card">
+        <button class="icon-btn modal-close" type="button" data-close-modal aria-label="Закрыть">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+        <p class="eyebrow">Бесшовный переход</p>
+        <h2 id="handoff-title" tabindex="-1">Продолжить на телефоне</h2>
+        <p class="muted">Откройте приложение «Вектор Банк» → «Сканировать QR». Черновик восстановится на том же шаге.</p>
+
+        <div class="qr-wrap">
+          <img id="qr-image" alt="QR-код для продолжения операции на телефоне" width="240" height="240" />
+          <div class="qr-expired hidden" id="qr-expired">
+            <strong>Код истёк</strong>
+            <button class="btn btn-secondary" type="button" id="btn-refresh-ticket">Обновить</button>
+          </div>
+        </div>
+
+        <div class="handoff-code">
+          <span>Код для ручного ввода</span>
+          <strong id="handoff-code">— — — — — —</strong>
+        </div>
+
+        <div class="handoff-meta">
+          <span class="timer" id="handoff-timer">01:30</span>
+          <span class="status" id="handoff-status">Ожидаем сканирование…</span>
+        </div>
+
+        <ol class="handoff-timeline" id="handoff-timeline" aria-label="Этапы перехода">
+          <li data-phase="issued" class="is-done">
+            <span class="phase-num">1</span>
+            <span><strong>Билет выпущен</strong><small>Одноразовый · 90 секунд</small></span>
+          </li>
+          <li data-phase="scanned" class="is-active">
+            <span class="phase-num">2</span>
+            <span><strong>Ожидаем телефон</strong><small>Сканируйте QR или введите код</small></span>
+          </li>
+          <li data-phase="stepup">
+            <span class="phase-num">3</span>
+            <span><strong>Step-up</strong><small>Face ID или PIN</small></span>
+          </li>
+          <li data-phase="restored">
+            <span class="phase-num">4</span>
+            <span><strong>Черновик восстановлен</strong><small>Тот же шаг и фокус</small></span>
+          </li>
+        </ol>
+
+        <button class="btn btn-ghost btn-block" type="button" id="btn-copy-link">Скопировать ссылку</button>
+        <p class="hint">Ссылка содержит одноразовый билет. Не пересылайте её другим людям.</p>
+      </div>
+    </div>
+
+    <!-- НАСТРОЙКИ ДОСТУПНОСТИ -->
+    <div class="modal hidden" id="a11y-modal" role="dialog" aria-modal="true" aria-labelledby="a11y-title">
+      <div class="modal-backdrop" data-close-a11y></div>
+      <div class="modal-card a11y-card">
+        <button class="icon-btn modal-close" type="button" data-close-a11y aria-label="Закрыть">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+        <p class="eyebrow">Доступность</p>
+        <h2 id="a11y-title" tabindex="-1">Настройки интерфейса</h2>
+        <p class="muted">Размер текста, контраст и анимация. Профиль сохраняется в черновике и переносится на телефон вместе с операцией.</p>
+
+        <div class="setting">
+          <span class="setting-label">Размер текста</span>
+          <div class="segmented" role="group" aria-label="Размер текста">
+            <button type="button" data-font="1" class="is-active">100%</button>
+            <button type="button" data-font="1.15">115%</button>
+            <button type="button" data-font="1.3">130%</button>
+          </div>
+        </div>
+
+        <label class="toggle a11y-toggle">
+          <input id="a11y-contrast" type="checkbox" />
+          <span class="toggle-track" aria-hidden="true"></span>
+          <span>Повышенный контраст</span>
+        </label>
+
+        <label class="toggle a11y-toggle">
+          <input id="a11y-motion" type="checkbox" />
+          <span class="toggle-track" aria-hidden="true"></span>
+          <span>Уменьшить анимацию</span>
+        </label>
+
+        <p class="hint">Настройки соответствуют рекомендациям WCAG 2.2 AA и ГОСТ Р 52872-2019.</p>
+      </div>
+    </div>
+
+    <!-- СЕРВИСНОЕ ОКНО -->
+    <div class="modal hidden" id="info-modal" role="dialog" aria-modal="true" aria-labelledby="info-title">
+      <div class="modal-backdrop" data-close-info></div>
+      <div class="modal-card info-card">
+        <button class="icon-btn modal-close" type="button" data-close-info aria-label="Закрыть">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        </button>
+        <p class="eyebrow" id="info-eyebrow">Сервис</p>
+        <h2 id="info-title" tabindex="-1">Информация</h2>
+        <div id="info-body" class="info-body"></div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/app.js?v=20261020"></script>
+  </body>
+</html>

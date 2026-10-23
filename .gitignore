@@ -1,0 +1,31 @@
+node_modules/
+.env
+*.log
+.DS_Store
+coverage/
+dist/
+
+# Flutter / Dart
+.dart_tool/
+.pub-cache/
+.packages
+build/
+*.iml
+
+# Android
+apps/mobile/android/.gradle/
+apps/mobile/android/local.properties
+apps/mobile/android/key.properties
+apps/mobile/android/**/*.jks
+apps/mobile/android/**/*.keystore
+
+# iOS / CocoaPods
+apps/mobile/ios/Pods/
+apps/mobile/ios/.symlinks/
+apps/mobile/ios/Flutter/ephemeral/
+apps/mobile/ios/Flutter/Generated.xcconfig
+apps/mobile/ios/Flutter/flutter_export_environment.sh
+apps/mobile/ios/Runner.xcworkspace/xcuserdata/
+apps/mobile/ios/Runner.xcodeproj/xcuserdata/
+.demo.pid
+.demo.log

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b1f3a" />
+    <title>Вектор Банк — мобильный клиент (демо)</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/mobile.css" />
+  </head>
+  <body>
+    <div class="stage">
+      <div class="stage-copy">
+        <p class="stage-eyebrow">Демонстрационный стенд</p>
+        <h1>Мобильный клиент</h1>
+        <p>
+          Упрощённая копия Flutter-приложения для проверки протокола перехода в браузере. Рабочий мобильный
+          клиент — в каталоге <code>apps/mobile</code>.
+        </p>
+        <a class="stage-link" href="/">← Вернуться в интернет-банк</a>
+      </div>
+
+      <div class="phone" id="phone">
+        <div class="phone-status">
+          <span id="clock">9:41</span>
+          <span class="status-icons" aria-hidden="true">
+            <svg viewBox="0 0 18 12" width="17" height="11" fill="currentColor"><rect x="0" y="7" width="3" height="5" rx="1"/><rect x="5" y="5" width="3" height="7" rx="1"/><rect x="10" y="2.5" width="3" height="9.5" rx="1"/><rect x="15" y="0" width="3" height="12" rx="1" opacity=".4"/></svg>
+            <svg viewBox="0 0 16 12" width="15" height="11" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1 4.5a10 10 0 0 1 14 0M3.5 7.2a6.5 6.5 0 0 1 9 0M6 9.7a3 3 0 0 1 4 0"/></svg>
+            <svg viewBox="0 0 24 12" width="23" height="11" fill="none"><rect x="1" y="1" width="19" height="10" rx="3" stroke="currentColor" stroke-width="1.4" opacity=".5"/><rect x="3" y="3" width="13" height="6" rx="1.6" fill="currentColor"/><rect x="21.5" y="4" width="1.8" height="4" rx=".9" fill="currentColor" opacity=".5"/></svg>
+          </span>
+        </div>
+
+        <div class="phone-notch" aria-hidden="true"></div>
+
+        <header class="m-header">
+          <span class="m-brand">
+            <svg viewBox="0 0 32 32" width="22" height="22" fill="none" aria-hidden="true">
+              <path d="M6 22 16 6l10 16-10 4-10-4Z" fill="#ffffff" opacity=".92" />
+              <path d="M11 21.2 16 12l5 9.2-5 2-5-2Z" fill="#0b1f3a" />
+            </svg>
+            Вектор<span>банк</span>
+          </span>
+          <span class="m-demo">demo</span>
+        </header>
+
+        <main class="m-main">
+          <!-- ВХОД -->
+          <section id="m-login" class="m-screen">
+            <div class="m-hero">
+              <p class="m-eyebrow">Мобильный банк</p>
+              <h2>Вход по номеру телефона</h2>
+              <p class="m-muted">Демо-контур. Код подтверждения — 0000.</p>
+            </div>
+            <label class="m-field">
+              <span>Телефон</span>
+              <input id="m-phone" type="tel" value="+7 900 000-00-42" autocomplete="tel" />
+            </label>
+            <label class="m-field">
+              <span>Код</span>
+              <input id="m-otp" type="password" value="0000" inputmode="numeric" />
+            </label>
+            <button class="m-btn m-btn-primary" type="button" id="m-login-btn">Войти</button>
+            <p class="m-note">После входа доступен подхват операции с компьютера.</p>
+          </section>
+
+          <!-- ГЛАВНЫЙ ЭКРАН -->
+          <section id="m-home" class="m-screen hidden">
+            <div class="m-greeting">
+              <p class="m-eyebrow">Здравствуйте</p>
+              <h2 id="m-user-name">Анна</h2>
+              <p class="m-muted" id="m-device-label">iPhone · iOS</p>
+            </div>
+
+            <div class="m-balance">
+              <span>Текущий счёт</span>
+              <strong>128 450,75 ₽</strong>
+              <small>•• 4417</small>
+            </div>
+
+            <div class="m-card">
+              <h3>Подхватить операцию</h3>
+              <p class="m-muted small">Отсканируйте QR на компьютере или вставьте ссылку, которая появилась в интернет-банке.</p>
+
+              <label class="m-field">
+                <span>Ссылка или билет</span>
+                <textarea id="m-ticket" rows="3" placeholder="seamlessbank://handoff?t=…"></textarea>
+              </label>
+              <div class="m-row">
+                <label class="m-field">
+                  <span>Код</span>
+                  <input id="m-code" inputmode="numeric" maxlength="6" placeholder="000000" />
+                </label>
+                <button class="m-btn m-btn-ghost m-btn-compact" type="button" id="m-last">Последний QR</button>
+              </div>
+              <button class="m-btn m-btn-primary" type="button" id="m-preview-btn">Продолжить</button>
+            </div>
+
+            <div class="m-timeline" aria-label="Как это работает">
+              <div class="m-step"><span>1</span>QR на компьютере</div>
+              <div class="m-step"><span>2</span>Face ID на телефоне</div>
+              <div class="m-step"><span>3</span>Черновик восстановлен</div>
+            </div>
+          </section>
+
+          <!-- ПОДТВЕРЖДЕНИЕ -->
+          <section id="m-confirm" class="m-screen hidden">
+            <p class="m-eyebrow">Шаг 2 из 3</p>
+            <h2>Подтвердите переход</h2>
+            <p class="m-muted">Операция найдена. Проверьте получателя и сумму.</p>
+
+            <div class="m-summary">
+              <div><span>Получатель</span><strong id="p-recipient">—</strong></div>
+              <div><span>Банк</span><strong id="p-bank">—</strong></div>
+              <div><span>Сумма</span><strong id="p-amount">—</strong></div>
+              <div><span>Шаг</span><strong id="p-step">—</strong></div>
+            </div>
+
+            <div class="m-faceid">
+              <svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4">
+                <path d="M6 16V9a3 3 0 0 1 3-3h7M32 6h7a3 3 0 0 1 3 3v7M42 32v7a3 3 0 0 1-3 3h-7M16 42H9a3 3 0 0 1-3-3v-7" />
+                <path d="M17 19v4M31 19v4M24 19v8l-3 2M18 32c3.6 3 8.4 3 12 0" />
+              </svg>
+              <span>Face ID</span>
+            </div>
+
+            <button class="m-btn m-btn-primary" type="button" id="m-faceid-btn">Подтвердить и продолжить</button>
+            <button class="m-btn m-btn-ghost" type="button" id="m-cancel-btn">Отмена</button>
+            <p class="m-note">Биометрия подтверждает, что операцию продолжает владелец устройства.</p>
+          </section>
+
+          <!-- ЧЕРНОВИК -->
+          <section id="m-draft" class="m-screen hidden">
+            <div class="m-restored">
+              <span class="m-restored-icon">✓</span>
+              <div>
+                <strong>Черновик восстановлен</strong>
+                <p id="m-restored-text">Шаг 2 · фокус на поле «Сумма»</p>
+              </div>
+            </div>
+
+            <div class="m-process" id="m-process" aria-label="Этапы операции">
+              <span class="is-done">Создана</span>
+              <span class="is-done">Заполнение</span>
+              <span class="is-active">Переход</span>
+              <span>Исполнена</span>
+            </div>
+
+            <div class="m-syncline">
+              <span class="m-dot"></span>
+              <span id="m-save-state">Синхронизировано с компьютером</span>
+            </div>
+
+            <div class="m-card m-card-form">
+              <h3>Перевод по реквизитам</h3>
+              <label class="m-field">
+                <span>Получатель</span>
+                <input id="mf-recipientName" type="text" autocomplete="off" />
+              </label>
+              <label class="m-field">
+                <span>Банк</span>
+                <input id="mf-recipientBank" type="text" autocomplete="off" />
+              </label>
+              <label class="m-field">
+                <span>Счёт</span>
+                <input id="mf-recipientAccount" type="text" inputmode="numeric" autocomplete="off" />
+              </label>
+              <label class="m-field">
+                <span>Сумма</span>
+                <input id="mf-amount" type="text" inputmode="decimal" autocomplete="off" />
+              </label>
+              <label class="m-field">
+                <span>Назначение</span>
+                <input id="mf-purpose" type="text" autocomplete="off" />
+              </label>
+            </div>
+
+            <button class="m-btn m-btn-primary" type="button" id="m-submit-btn">Отправить перевод</button>
+            <button class="m-btn m-btn-ghost" type="button" id="m-back-home">На главную</button>
+          </section>
+
+          <!-- УСПЕХ -->
+          <section id="m-success" class="m-screen hidden">
+            <div class="m-success-mark">
+              <svg viewBox="0 0 48 48" width="44" height="44" fill="none" stroke="currentColor" stroke-width="3">
+                <path d="M12 25l8 8 16-18" />
+              </svg>
+            </div>
+            <h2>Перевод отправлен</h2>
+            <p class="m-muted" id="m-success-sub">Чек доступен в истории операций.</p>
+            <div class="m-summary">
+              <div><span>Получатель</span><strong id="m-r-recipient">—</strong></div>
+              <div><span>Сумма</span><strong id="m-r-amount">—</strong></div>
+              <div><span>Операция</span><strong id="m-r-id">—</strong></div>
+            </div>
+            <button class="m-btn m-btn-primary" type="button" id="m-done">Готово</button>
+          </section>
+        </main>
+
+        <div class="phone-home" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <div id="m-toast" class="m-toast" role="status" aria-live="polite"></div>
+
+    <script type="module" src="/mobile.js"></script>
+  </body>
+</html>

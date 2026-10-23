@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Вектор Банк — админ-контур</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/admin.css" />
+  </head>
+  <body class="admin-body">
+    <section id="admin-login" class="view-login admin-login">
+      <div class="login-card">
+        <a class="brand" href="/" aria-label="Векторбанк">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="32" height="32" fill="none">
+              <path d="M6 22 16 6l10 16-10 4-10-4Z" fill="currentColor" opacity=".9" />
+              <path d="M11 21.2 16 12l5 9.2-5 2-5-2Z" fill="#0b1f3a" />
+            </svg>
+          </span>
+          <span class="brand-name">Вектор<span>банк</span></span>
+        </a>
+        <h1>Админ-контур</h1>
+        <p class="lead">Демонстрационные роли и аудит. Промышленный контур — OIDC/Keycloak.</p>
+        <form id="admin-form" class="form">
+          <label class="field">
+            <span>Роль</span>
+            <select id="admin-role">
+              <option value="admin">admin</option>
+              <option value="analyst">analyst</option>
+              <option value="support">support</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Код роли</span>
+            <input id="admin-code" type="password" value="ADMIN-2026" autocomplete="off" />
+          </label>
+          <button class="btn btn-primary btn-block" type="submit" id="admin-submit">Войти</button>
+          <p class="hint">Демо-код: <strong>ADMIN-2026</strong>. Роль client сюда не входит.</p>
+        </form>
+      </div>
+    </section>
+
+    <div id="admin-app" class="hidden">
+      <header class="admin-topbar">
+        <div class="brand brand-small">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
+              <path d="M6 22 16 6l10 16-10 4-10-4Z" fill="currentColor" opacity=".9" />
+              <path d="M11 21.2 16 12l5 9.2-5 2-5-2Z" fill="#0b1f3a" />
+            </svg>
+          </span>
+          <span class="brand-name">Вектор<span>банк</span></span>
+        </div>
+        <a class="btn btn-ghost" href="/research">Research</a>
+        <span class="admin-badge" id="admin-role-label">admin</span>
+        <button class="btn btn-ghost" type="button" id="admin-refresh">Обновить</button>
+        <button class="btn btn-ghost" type="button" id="admin-logout">Выйти</button>
+      </header>
+
+      <main class="admin-main">
+        <div class="admin-head">
+          <div>
+            <p class="eyebrow">B2B-минимум</p>
+            <h1>Операционная панель</h1>
+            <p class="muted">Воронка, задержки, аудит и экспорт. Данные демонстрационного контура.</p>
+          </div>
+          <div class="admin-exports">
+            <button class="btn btn-secondary" data-export="audit" data-format="csv">Аудит CSV</button>
+            <button class="btn btn-secondary" data-export="audit" data-format="json">Аудит JSON</button>
+            <button class="btn btn-secondary" data-export="operations" data-format="csv">Операции CSV</button>
+          </div>
+        </div>
+
+        <section class="admin-cards" id="admin-cards"></section>
+
+        <section class="admin-grid">
+          <article class="card">
+            <div class="card-head">
+              <span class="card-label">Воронка handoff</span>
+              <span class="badge badge-soft" id="funnel-rate">—</span>
+            </div>
+            <div id="funnel" class="funnel"></div>
+          </article>
+
+          <article class="card">
+            <div class="card-head">
+              <span class="card-label">Целостность аудита</span>
+              <span class="badge" id="chain-badge">—</span>
+            </div>
+            <p class="muted small" id="chain-text">Проверка hash chain…</p>
+            <p class="mono small" id="chain-hash">—</p>
+          </article>
+        </section>
+
+        <article class="card admin-process">
+          <div class="card-head">
+            <span class="card-label">Мониторинг бизнес-процесса</span>
+            <span class="badge badge-soft" id="process-summary">0 операций</span>
+          </div>
+          <div class="kanban" id="kanban"></div>
+        </article>
+
+        <article class="card admin-audit">
+          <div class="card-head">
+            <span class="card-label">Последние события аудита</span>
+            <span class="badge badge-soft" id="audit-count">0</span>
+          </div>
+          <div class="table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Время</th>
+                  <th>Событие</th>
+                  <th>Роль</th>
+                  <th>Операция</th>
+                  <th>Результат</th>
+                  <th>Hash</th>
+                </tr>
+              </thead>
+              <tbody id="audit-body"></tbody>
+            </table>
+          </div>
+        </article>
+      </main>
+    </div>
+
+    <div id="admin-toast" class="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/admin.js"></script>
+  </body>
+</html>

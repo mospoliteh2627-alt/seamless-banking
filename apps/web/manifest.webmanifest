@@ -1,0 +1,20 @@
+{
+  "name": "Вектор Банк — интернет-банк",
+  "short_name": "Вектор",
+  "description": "Демонстрационный интернет-банк с бесшовным переходом в мобильное приложение",
+  "lang": "ru",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f2f5fa",
+  "theme_color": "#0b1f3a",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
