@@ -1,0 +1,12 @@
+# Render Blueprint — деплой прототипа в один клик
+services:
+  - type: web
+    name: seamless-banking
+    runtime: docker
+    plan: free
+    healthCheckPath: /v1/health
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: REDIS_URL
+        value: ""
