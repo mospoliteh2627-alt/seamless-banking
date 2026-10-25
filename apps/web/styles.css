@@ -2043,6 +2043,32 @@ html.a11y-reduce-motion *::after {
   color: var(--ink);
 }
 
+/* Кнопки-кнопки, крупнее текст, меньше «белого шума» */
+.view-landing .btn-ghost {
+  background: #fff;
+  color: #1f3a5f;
+  border-color: #c9d4e3;
+  box-shadow: 0 1px 2px rgba(11, 31, 58, 0.08);
+}
+.view-landing .btn-ghost:hover {
+  background: #f2f6fc;
+  border-color: #1f57e0;
+  color: #1f57e0;
+}
+.landing-hero h1 {
+  font-size: 44px;
+}
+.landing-hero .lead {
+  font-size: 18px;
+}
+.l-section h2 {
+  font-size: 26px;
+}
+.l-section p {
+  font-size: 16.5px;
+  line-height: 1.65;
+}
+
 @media (max-width: 900px) {
   .landing-topbar {
     padding: 14px 20px;
