@@ -1805,3 +1805,21 @@ html.a11y-reduce-motion *::after {
   color: var(--muted);
   font-size: 10px;
 }
+
+/* Кнопка скачивания мобильного приложения (экран входа) */
+.login-download {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.login-download .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.login-download .hint {
+  text-align: center;
+  margin: 0;
+}
