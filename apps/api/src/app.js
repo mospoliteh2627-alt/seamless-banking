@@ -127,8 +127,14 @@ function deviceOf(auth) {
   };
 }
 
+const DEMO_NAMES = ['Энеджан', 'Эмине'];
+
+function randomDemoName() {
+  return DEMO_NAMES[Math.floor(Math.random() * DEMO_NAMES.length)];
+}
+
 function publicUser() {
-  return DEMO_USER;
+  return { ...DEMO_USER, name: randomDemoName() };
 }
 
 function cleanString(value, max) {
@@ -985,7 +991,7 @@ export async function buildApp(options = {}) {
     return {
       preview: {
         opId: draft.id,
-        ownerName: DEMO_USER.name,
+        ownerName: randomDemoName(),
         product: draft.product,
         step: draft.step,
         totalSteps: draft.totalSteps,
