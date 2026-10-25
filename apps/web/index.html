@@ -16,9 +16,49 @@
       <span class="orb orb-b"></span>
     </div>
 
+    <!-- ЛЕНДИНГ -->
+    <section id="view-landing" class="view view-landing">
+      <header class="landing-topbar">
+        <a class="brand" href="/" aria-label="Векторбанк">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32" width="30" height="30" fill="none">
+              <path d="M6 22 16 6l10 16-10 4-10-4Z" fill="currentColor" opacity=".9" />
+              <path d="M11 21.2 16 12l5 9.2-5 2-5-2Z" fill="#0b1f3a" />
+            </svg>
+          </span>
+          <span class="brand-name">Вектор<span>банк</span></span>
+        </a>
+        <a class="btn btn-secondary btn-sm" href="/VectorBank.apk" download>Скачать приложение</a>
+      </header>
+
+      <main class="landing-main">
+        <div class="landing-copy">
+          <p class="eyebrow">Демонстрация · бесшовный переход</p>
+          <h1>Начните операцию на компьютере — продолжите на телефоне</h1>
+          <p class="lead">Один черновик и одна сессия на всех устройствах. Веб-банк передаёт операцию в мобильное приложение по QR-коду — без повторного ввода.</p>
+          <div class="landing-actions">
+            <a class="btn btn-primary" href="/VectorBank.apk" download>
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 21h16" />
+              </svg>
+              Скачать мобильное приложение
+            </a>
+            <button class="btn btn-ghost" id="btn-go-login" type="button">Войти в интернет-банк</button>
+          </div>
+        </div>
+
+        <div class="landing-steps">
+          <div class="step-card"><span class="step-num">1</span><div><strong>Начните в вебе</strong><small>Перевод, заявка или платёж — как обычно.</small></div></div>
+          <div class="step-card"><span class="step-num">2</span><div><strong>Сканируйте QR</strong><small>Кнопка «Продолжить на телефоне» покажет код.</small></div></div>
+          <div class="step-card"><span class="step-num">3</span><div><strong>Продолжите на телефоне</strong><small>Face ID / PIN — тот же шаг уже в приложении.</small></div></div>
+        </div>
+      </main>
+    </section>
+
     <!-- ЭКРАН ВХОДА -->
-    <section id="view-login" class="view view-login">
+    <section id="view-login" class="view view-login hidden">
       <div class="login-card">
+        <button class="btn-back" id="btn-back-landing" type="button" aria-label="На главную">← На главную</button>
         <a class="brand" href="/" aria-label="Векторбанк">
           <span class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 32 32" width="32" height="32" fill="none">

@@ -1823,3 +1823,130 @@ html.a11y-reduce-motion *::after {
   text-align: center;
   margin: 0;
 }
+
+/* ===== Лендинг ===== */
+.view-landing {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  color: #eaf1fb;
+  background:
+    radial-gradient(1000px 500px at 85% -10%, rgba(47, 107, 255, 0.22), transparent 60%),
+    radial-gradient(800px 400px at -10% 110%, rgba(22, 194, 163, 0.14), transparent 55%),
+    linear-gradient(160deg, #0b1f3a, #0d2446 60%, #0a1a33);
+}
+.landing-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 40px;
+}
+.landing-topbar .brand {
+  color: #fff;
+}
+.btn-sm {
+  padding: 9px 16px;
+  font-size: 13px;
+}
+.landing-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 40px 64px;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+.landing-copy .eyebrow {
+  color: #9db8ff;
+}
+.landing-copy h1 {
+  margin: 12px 0 16px;
+  font-size: 48px;
+  line-height: 1.08;
+  letter-spacing: -1.2px;
+  color: #fff;
+  max-width: 560px;
+}
+.landing-copy .lead {
+  font-size: 17px;
+  line-height: 1.6;
+  color: #b7c6dd;
+  max-width: 520px;
+}
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.landing-actions .btn {
+  min-height: 48px;
+}
+.landing-steps {
+  display: grid;
+  gap: 14px;
+}
+.step-card {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 14px;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.step-num {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(47, 107, 255, 0.18);
+  color: #9db8ff;
+  font-weight: 800;
+  font-size: 17px;
+}
+.step-card strong {
+  color: #fff;
+  font-size: 15px;
+}
+.step-card small {
+  color: #9fb0c7;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.btn-back:hover {
+  color: var(--ink);
+}
+
+@media (max-width: 900px) {
+  .landing-main {
+    grid-template-columns: 1fr;
+    padding: 32px 24px 48px;
+    gap: 32px;
+  }
+  .landing-copy h1 {
+    font-size: 34px;
+  }
+  .landing-topbar {
+    padding: 16px 24px;
+  }
+}

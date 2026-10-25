@@ -35,6 +35,7 @@ const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selec
 
 const els = {
   viewLogin: $('#view-login'),
+  viewLanding: $('#view-landing'),
   viewApp: $('#view-app'),
   loginForm: $('#login-form'),
   loginPhone: $('#login-phone'),
@@ -478,6 +479,7 @@ async function restoreSession() {
 
 async function enterApp() {
   els.viewLogin.classList.add('hidden');
+  els.viewLanding.classList.add('hidden');
   els.viewApp.classList.remove('hidden');
   renderUser();
   connectSocket();
@@ -1361,10 +1363,23 @@ if ('serviceWorker' in navigator) {
 
 loadA11y();
 
+function showLanding() {
+  els.viewLogin.classList.add('hidden');
+  els.viewLanding.classList.remove('hidden');
+}
+function showLogin() {
+  els.viewLanding.classList.add('hidden');
+  els.viewLogin.classList.remove('hidden');
+  els.loginPhone.focus();
+}
+(function wireLanding() {
+  const goLogin = $('#btn-go-login');
+  const backLanding = $('#btn-back-landing');
+  if (goLogin) goLogin.addEventListener('click', showLogin);
+  if (backLanding) backLanding.addEventListener('click', showLanding);
+})();
+
 (async function boot() {
   const restored = await restoreSession();
-  if (!restored) {
-    els.viewLogin.classList.remove('hidden');
-    els.loginPhone.focus();
-  }
+  if (!restored) showLanding();
 })();
