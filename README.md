@@ -35,6 +35,12 @@
 |---|---|---|
 | ![Dashboard](docs/screens/01-dashboard.png) | ![QR](docs/screens/03-handoff-qr.png) | ![Mobile](docs/screens/05-mobile-draft.png) |
 
+Живой сценарий на лендинге и окно перехода с телеметрией:
+
+| Лендинг | Окно перехода | Веб после перехода |
+|---|---|---|
+| ![Hero](docs/screens/06-hero-live-handoff.png) | ![Handoff](docs/screens/07-handoff-live-modal.png) | ![After](docs/screens/08-web-after-handoff.png) |
+
 ## Быстрый старт
 
 ```bash
