@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Вектор Банк — возможности: проверка получателя, непрерывность, метрики</title>
+    <meta name="description" content="Как устроен бесшовный переход между веб- и мобильным банком: проверка получателя до списания, перенос состояния операции и живые метрики." />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/product.css?v=20261031" />
+  </head>
+  <body>
+    <header class="top">
+      <a class="brand" href="/" aria-label="Векторбанк">
+        <span class="brand-mark" aria-hidden="true">▲</span>
+        Вектор<span style="font-weight: 400">банк</span>
+      </a>
+      <nav class="top-nav" aria-label="Разделы">
+        <a href="#payee">Проверка получателя</a>
+        <a href="#continuity">Что переносится</a>
+        <a href="#metrics">Метрики</a>
+        <a class="btn btn-primary" href="/" style="min-height: 38px; padding: 0 14px; font-size: 13px">Открыть демо</a>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <section class="hero">
+        <div class="hero-card">
+          <div>
+            <p class="eyebrow">Возможности · доверие · измеримость</p>
+            <h1>Бесшовность, которой <span class="accent">доверяют</span></h1>
+            <p class="lead">
+              Перевод, начатый в вебе, продолжается на телефоне с того же шага — а получатель
+              проверяется до списания. Ниже — живые данные работающего прототипа, а не слайды.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="/">Открыть интернет-банк</a>
+              <a class="btn btn-ghost" href="/guide.html">Инструкция за 3 минуты</a>
+            </div>
+          </div>
+          <aside class="live-card" aria-label="Живые метрики">
+            <div class="live-head"><span class="live-dot" aria-hidden="true"></span> live · API</div>
+            <div class="live-grid">
+              <div class="live-stat"><b id="liveHandoffs">—</b><span>переходов выполнено</span></div>
+              <div class="live-stat"><b id="liveSync">—</b><span>p95 синхронизации</span></div>
+              <div class="live-stat"><b id="liveVop">—</b><span>проверок получателя</span></div>
+              <div class="live-stat"><b id="liveUptime">—</b><span>аптайм демо</span></div>
+            </div>
+            <p class="live-note">Данные обновляются каждые 5 секунд из <code>/v1/metrics</code>.</p>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section" id="payee">
+        <div class="section-head">
+          <h2>Проверка получателя <span class="accent">до списания</span></h2>
+          <p class="sub">
+            Практика Confirmation of Payee (UK) и SEPA VoP: банк сверяет имя со счётом и предупреждает
+            о несовпадении. Попробуйте — справочник демонстрационный, данные синтетические.
+          </p>
+        </div>
+        <div class="vop">
+          <form class="vop-form" id="vopForm" novalidate>
+            <div class="vop-presets" role="group" aria-label="Примеры">
+              <button type="button" class="preset is-active" data-preset="match">Совпадает</button>
+              <button type="button" class="preset" data-preset="close">Похожее имя</button>
+              <button type="button" class="preset" data-preset="mismatch">Другое имя</button>
+              <button type="button" class="preset" data-preset="unknown">Неизвестный счёт</button>
+            </div>
+            <label class="field"><span>Имя получателя</span><input id="vopName" name="name" autocomplete="off" value="Иван Петров" /></label>
+            <label class="field"><span>Банк</span><input id="vopBank" name="bank" autocomplete="off" value="Вектор Банк" /></label>
+            <label class="field"><span>Счёт</span><input id="vopAccount" name="account" inputmode="numeric" autocomplete="off" value="40817810000000001234" /></label>
+            <button class="btn btn-primary" type="submit" id="vopCheck">Проверить получателя</button>
+            <p class="vop-hint">Демо-счета: 40817810000000001234, …5678, …9999, …2222.</p>
+          </form>
+
+          <div class="vop-result" aria-live="polite">
+            <div class="result-empty" id="vopEmpty">
+              <span class="glyph" aria-hidden="true">⇄</span>
+              <p>Выберите пример или измените данные —<br />результат появится здесь.</p>
+            </div>
+            <div class="result-card" id="vopCard">
+              <div class="result-status" id="vopStatus">
+                <span class="dot" id="vopDot" aria-hidden="true">✓</span>
+                <span id="vopStatusText">Совпадает</span>
+              </div>
+              <div class="result-rows">
+                <div class="result-row"><span>Вы указали</span><b id="vopGiven">—</b></div>
+                <div class="result-row"><span>В банке получателя</span><b id="vopExpected">—</b></div>
+                <div class="result-row"><span>Счёт</span><b id="vopAccountOut">—</b></div>
+              </div>
+              <p class="result-meta" id="vopMeta">—</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="continuity">
+        <div class="section-head">
+          <h2>Переезжает состояние, <span class="accent">а не экран</span></h2>
+          <p class="sub">Телефон открывает ту же операцию на том же шаге — с полями, фокусом и позицией курсора.</p>
+        </div>
+        <div class="transfer-grid">
+          <article class="transfer-card"><span class="icon" aria-hidden="true">≡</span><b>5 полей</b><span>черновик и суммы</span></article>
+          <article class="transfer-card"><span class="icon" aria-hidden="true">2/3</span><b>Шаг 2 из 3</b><span>продолжение без возврата</span></article>
+          <article class="transfer-card"><span class="icon" aria-hidden="true">⌖</span><b>Фокус и курсор</b><span>позиция в поле «сумма»</span></article>
+          <article class="transfer-card"><span class="icon" aria-hidden="true">90</span><b>90 секунд</b><span>одноразовый билет</span></article>
+        </div>
+      </section>
+
+      <section class="section" id="metrics">
+        <div class="section-head">
+          <h2>Метрики <span class="accent">в реальном времени</span></h2>
+          <p class="sub">Серверная синхронизация и подхват измеряются отдельно — как в диссертации, без смешивания с действиями человека.</p>
+        </div>
+        <div class="metrics-grid">
+          <article class="metric-card"><b id="mTickets">—</b><span>билетов выпущено</span></article>
+          <article class="metric-card"><b id="mHandoffs">—</b><span>переходов выполнено</span></article>
+          <article class="metric-card"><b id="mVop">—</b><span>проверок получателя</span></article>
+          <article class="metric-card"><b id="mSync">—</b><span>p95 синхронизации, мс</span></article>
+          <article class="metric-card"><b id="mRedeem">—</b><span>p95 обработки подхвата, мс</span></article>
+          <article class="metric-card"><b id="mUptime">—</b><span>аптайм демо</span></article>
+        </div>
+        <div class="funnel" aria-label="Воронка перехода">
+          <div style="font-size: 12px; font-weight: 700; color: var(--muted)">Воронка: от черновика до исполнения</div>
+          <div class="funnel-row"><span>Черновик</span><div class="funnel-bar"><i id="fStartedBar"></i></div><b id="fStarted">—</b></div>
+          <div class="funnel-row"><span>Билет</span><div class="funnel-bar"><i id="fTicketsBar"></i></div><b id="fTickets">—</b></div>
+          <div class="funnel-row"><span>Подхват</span><div class="funnel-bar"><i id="fHandoffsBar"></i></div><b id="fHandoffs">—</b></div>
+          <div class="funnel-row"><span>Исполнено</span><div class="funnel-bar"><i id="fSubmittedBar"></i></div><b id="fSubmitted">—</b></div>
+        </div>
+      </section>
+
+      <section class="section" id="security">
+        <div class="section-head">
+          <h2>Безопасность <span class="accent">по умолчанию</span></h2>
+          <p class="sub">Переход не расширяет права: он переносит контекст в рамках уже подтверждённой сессии.</p>
+        </div>
+        <div class="security-grid">
+          <article class="security-card"><h3>Одноразовый билет</h3><p>QR и код живут 90 секунд, привязаны к клиенту и операции. Повторный подхват запрещён.</p></article>
+          <article class="security-card"><h3>Step-up на телефоне</h3><p>Face ID или PIN повышает уровень аутентификации. Веб-канал сам по себе подхватить не может.</p></article>
+          <article class="security-card"><h3>Lease и аудит</h3><p>Право редактирования у одного устройства; все действия — в хеш-цепочке аудита.</p></article>
+        </div>
+      </section>
+
+      <section class="cta">
+        <div>
+          <h2>Проверить переход целиком</h2>
+          <p>3 минуты: перевод → QR → телефон → возврат управления.</p>
+        </div>
+        <div class="hero-actions" style="margin: 0">
+          <a class="btn btn-primary" href="/">Открыть демо</a>
+          <a class="btn btn-ghost" href="/guide.html">Как это работает</a>
+        </div>
+      </section>
+
+      <footer>
+        Вектор Банк — научно-исследовательский прототип · 09.04.02 · Мосполитех · данные синтетические
+      </footer>
+    </main>
+
+    <script type="module" src="/product.js?v=20261031"></script>
+  </body>
+</html>

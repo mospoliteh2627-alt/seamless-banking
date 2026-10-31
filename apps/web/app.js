@@ -27,6 +27,8 @@ const state = {
   handoffStartedAt: 0,
   handoffIssuedAt: 0,
   handoffClosing: false,
+  payee: null,
+  payeeTimer: null,
   submitKey: null,
   a11y: { fontScale: 1, contrast: false, reduceMotion: false },
   lastFocus: null,
@@ -94,6 +96,21 @@ const els = {
   btnGuide: $('#btn-guide'),
   guideModal: $('#guide-modal'),
   guideSteps: $('#guide-steps'),
+  payeeCheck: $('#payee-check'),
+  payeeIcon: $('#payee-icon'),
+  payeeTitle: $('#payee-title'),
+  payeeText: $('#payee-text'),
+  payeeFix: $('#payee-fix'),
+  payeeConfirm: $('#payee-confirm'),
+  payeeExpected: $('#payee-expected'),
+  payeeAccept: $('#f-payee-accept'),
+  payeeName: $('#f-recipientName'),
+  payeeAccount: $('#f-recipientAccount'),
+  payeeBank: $('#f-recipientBank'),
+  hoFields: $('#ho-fields'),
+  hoStep: $('#ho-step'),
+  hoTotal: $('#ho-total'),
+  hoFocus: $('#ho-focus'),
 };
 
 /* ------------------------------------------------------------------ */
@@ -301,6 +318,7 @@ function fillDemoTransfer() {
   renderStep();
   updateSummary();
   scheduleSave();
+  schedulePayeeCheck();
 }
 
 async function runGuideAction(action) {
@@ -825,6 +843,8 @@ function applyDraft(draft, { applyProfile = true } = {}) {
   }
   renderStep();
   updateSummary();
+  if (draft.payee) renderPayee(draft.payee);
+  else resetPayee();
   if (draft.process) renderProcess(draft.process);
   els.saveTime.textContent = draft.updatedAt
     ? `Обновлено ${timeFormat.format(new Date(draft.updatedAt))}`
@@ -859,6 +879,92 @@ function focusFromContext(context) {
     }
   }
   if (context.scroll) window.scrollTo({ top: context.scroll, behavior: 'auto' });
+}
+
+const PAYEE_TITLES = {
+  checking: 'Проверяем получателя…',
+  match: 'Получатель подтверждён',
+  close_match: 'Похожее имя',
+  no_match: 'Имя не совпадает',
+  no_data: 'Счёт не найден в справочнике',
+};
+
+function resetPayee() {
+  state.payee = null;
+  if (els.payeeCheck) els.payeeCheck.hidden = true;
+  els.payeeConfirm?.classList.add('hidden');
+  if (els.payeeAccept) els.payeeAccept.checked = false;
+}
+
+function renderPayee(result) {
+  if (!els.payeeCheck) return;
+  state.payee = result || null;
+  const cls = {
+    checking: 'is-checking',
+    match: 'is-match',
+    close_match: 'is-close',
+    no_match: 'is-mismatch',
+    no_data: 'is-unknown',
+  }[result?.status] || 'is-unknown';
+  els.payeeCheck.hidden = false;
+  els.payeeCheck.className = `payee-check ${cls}`;
+  els.payeeTitle.textContent = PAYEE_TITLES[result?.status] || 'Проверка получателя';
+  els.payeeText.textContent =
+    result?.message ||
+    (result?.status === 'checking' ? 'Сверяем имя и счёт в демо-справочнике' : 'Проверьте реквизиты');
+  const fixable = result?.status === 'close_match' && result?.expectedName;
+  els.payeeFix?.classList.toggle('hidden', !fixable);
+  if (result?.status === 'close_match') {
+    els.payeeConfirm?.classList.remove('hidden');
+    if (els.payeeExpected) els.payeeExpected.textContent = result.expectedName;
+  } else {
+    els.payeeConfirm?.classList.add('hidden');
+    if (els.payeeAccept) els.payeeAccept.checked = false;
+  }
+}
+
+function schedulePayeeCheck() {
+  clearTimeout(state.payeeTimer);
+  const account = String(els.payeeAccount?.value || '').replace(/\D/g, '');
+  const name = String(els.payeeName?.value || '').trim();
+  if (account.length < 16 || name.length < 3) {
+    resetPayee();
+    return;
+  }
+  renderPayee({ status: 'checking' });
+  state.payeeTimer = setTimeout(checkPayee, 550);
+}
+
+async function checkPayee() {
+  const account = String(els.payeeAccount?.value || '').replace(/\D/g, '');
+  const name = String(els.payeeName?.value || '').trim();
+  const bank = String(els.payeeBank?.value || '').trim();
+  if (account.length < 16 || name.length < 3) return;
+  try {
+    const result = await api('/payee/verify', {
+      method: 'POST',
+      body: {
+        account,
+        bank,
+        recipientName: name,
+        ...(state.draft?.id ? { opId: state.draft.id } : {}),
+      },
+    });
+    renderPayee(result);
+  } catch (error) {
+    renderPayee({
+      status: 'no_data',
+      message: error.status === 429 ? 'Слишком много проверок — подождите минуту' : 'Проверка недоступна',
+    });
+  }
+}
+
+function acceptExpectedPayee() {
+  if (!state.payee?.expectedName || !els.payeeName) return;
+  els.payeeName.value = state.payee.expectedName;
+  els.payeeName.focus();
+  scheduleSave();
+  checkPayee();
 }
 
 function collectFields() {
@@ -1146,6 +1252,26 @@ function handleEvent(message) {
 /* QR-переход                                                          */
 /* ------------------------------------------------------------------ */
 
+const FOCUS_LABELS = {
+  recipientName: 'получатель',
+  recipientBank: 'банк',
+  recipientAccount: 'счёт',
+  amount: 'сумма',
+  purpose: 'назначение',
+};
+
+function renderHandoffContext() {
+  const draft = state.draft;
+  if (!draft) return;
+  const fields = Object.entries(draft.fields || {}).filter(
+    ([key, value]) => !['currency', 'fee', 'saveRecipient'].includes(key) && String(value || '').trim() !== '',
+  );
+  if (els.hoFields) els.hoFields.textContent = String(fields.length);
+  if (els.hoStep) els.hoStep.textContent = String(draft.step || 1);
+  if (els.hoTotal) els.hoTotal.textContent = String(draft.totalSteps || 3);
+  if (els.hoFocus) els.hoFocus.textContent = FOCUS_LABELS[draft.context?.focus] || draft.context?.focus || '—';
+}
+
 async function openHandoff() {
   if (!state.draft) return;
   clearInterval(state.handoffStatusTimer);
@@ -1166,6 +1292,7 @@ async function openHandoff() {
     els.handoffCode.textContent = data.code.split('').join(' ');
     els.handoffStatus.textContent = 'Ожидаем сканирование…';
     resetHandoffTimeline();
+    renderHandoffContext();
     resetHandoffPhase();
     els.modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -1318,6 +1445,16 @@ async function claimDraft() {
 
 async function submitDraft() {
   if (!state.draft) return;
+  if (state.payee?.status === 'no_match') {
+    toast(`Имя не совпадает с получателем: ${state.payee.expectedName || 'проверьте реквизиты'}`, 'error');
+    els.payeeName?.focus();
+    return;
+  }
+  if (state.payee?.status === 'close_match' && !els.payeeAccept?.checked) {
+    toast('Подтвердите получателя с похожим именем', 'error');
+    els.payeeAccept?.focus();
+    return;
+  }
   if (!$('#f-agreement').checked) {
     toast('Подтвердите условия перевода', 'error');
     return;
@@ -1332,11 +1469,14 @@ async function submitDraft() {
     const data = await api(`/drafts/${state.draft.id}/submit`, {
       method: 'POST',
       headers: { 'Idempotency-Key': state.submitKey },
+      body: { acceptCloseMatch: els.payeeAccept?.checked === true },
     });
     state.submitKey = null;
     showSuccess(data.receipt);
   } catch (error) {
-    if (error.code === 'VALIDATION_FAILED') {
+    if (error.code === 'PAYEE_MISMATCH' || error.code === 'PAYEE_CLOSE_MATCH') {
+      toast(error.message, 'error');
+    } else if (error.code === 'VALIDATION_FAILED') {
       toast('Проверьте обязательные поля перевода', 'error');
     } else {
       toast(error.message, 'error');
@@ -1502,6 +1642,10 @@ $$('[data-close-modal]').forEach((element) => {
 
 $('#btn-a11y').addEventListener('click', openA11y);
 els.btnGuide?.addEventListener('click', openGuide);
+[els.payeeName, els.payeeAccount, els.payeeBank].forEach((field) => {
+  field?.addEventListener('input', schedulePayeeCheck);
+});
+els.payeeFix?.addEventListener('click', acceptExpectedPayee);
 $$('[data-close-guide]').forEach((element) => {
   element.addEventListener('click', () => closeGuide());
 });

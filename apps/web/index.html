@@ -31,6 +31,7 @@
         <nav class="landing-nav" aria-label="Разделы">
           <a href="#problem">Проблема</a>
           <a href="#metrics">Метрики</a>
+          <a href="/product.html">Возможности</a>
           <a href="#stack">Архитектура</a>
           <a class="btn btn-primary btn-sm" href="/VectorBank.apk" download>Скачать APK</a>
         </nav>
@@ -150,6 +151,31 @@
             </ul>
           </section>
 
+
+          <section class="l-section" id="trust">
+            <h2>Доверие по умолчанию. <span class="accent">Проверка до списания.</span></h2>
+            <div class="trust-grid">
+              <article class="trust-card">
+                <span class="trust-icon" aria-hidden="true">✓</span>
+                <h3>Проверка получателя</h3>
+                <p>Имя и счёт сверяются до подтверждения. Совпало — зелёный, похоже — предупреждение, другое имя — блокировка.</p>
+              </article>
+              <article class="trust-card">
+                <span class="trust-icon" aria-hidden="true">⇄</span>
+                <h3>Что переносится</h3>
+                <p>Не экран, а состояние: поля, шаг, фокус, курсор и срок жизни билета. Ничего не нужно вводить заново.</p>
+              </article>
+              <article class="trust-card">
+                <span class="trust-icon" aria-hidden="true">◎</span>
+                <h3>Живые метрики</h3>
+                <p>p95 синхронизации, число переходов и подхватов — из работающего API, а не из презентации.</p>
+              </article>
+            </div>
+            <div class="trust-actions">
+              <a class="btn btn-primary" href="/product.html">Открыть страницу возможностей</a>
+              <a class="btn btn-ghost" href="/guide.html">Инструкция за 3 минуты</a>
+            </div>
+          </section>
           <section class="l-section" id="stack">
             <h2>Архитектура, которая не прощает задержек</h2>
             <div class="stack-grid">
@@ -417,6 +443,14 @@
                     <span>Счёт получателя</span>
                     <input id="f-recipientAccount" name="recipientAccount" type="text" inputmode="numeric" placeholder="40817 810 0 0000 0000000" autocomplete="off" />
                   </label>
+                  <div class="payee-check" id="payee-check" hidden aria-live="polite">
+                    <span class="payee-icon" id="payee-icon" aria-hidden="true"></span>
+                    <div class="payee-copy">
+                      <strong id="payee-title">Проверяем получателя…</strong>
+                      <p id="payee-text">Сверяем имя и счёт в демо-справочнике</p>
+                    </div>
+                    <button class="payee-fix hidden" id="payee-fix" type="button">Подставить</button>
+                  </div>
                   <div class="form-actions">
                     <button class="btn btn-primary" type="button" data-next="2">Далее</button>
                   </div>
@@ -459,6 +493,10 @@
                     <div><dt>Назначение</dt><dd id="s-purpose">—</dd></div>
                     <div class="summary-total"><dt>Сумма</dt><dd id="s-amount">0 ₽</dd></div>
                   </dl>
+                  <label class="payee-confirm hidden" id="payee-confirm">
+                    <input id="f-payee-accept" type="checkbox" />
+                    <span>Имя отличается от данных банка. Подтверждаю получателя: <b id="payee-expected">—</b></span>
+                  </label>
                   <label class="toggle">
                     <input id="f-agreement" type="checkbox" />
                     <span class="toggle-track" aria-hidden="true"></span>
@@ -573,6 +611,15 @@
           </div>
 
           <div class="ho-stages">
+            <div class="ho-context" id="ho-context">
+              <span class="ho-context-title">Что переносим</span>
+              <div class="ho-chips">
+                <span><b id="ho-fields">0</b> полей</span>
+                <span>шаг <b id="ho-step">1</b> из <b id="ho-total">3</b></span>
+                <span>фокус: <b id="ho-focus">—</b></span>
+                <span>билет: <b>90 с</b></span>
+              </div>
+            </div>
             <ol class="handoff-timeline" id="handoff-timeline" aria-label="Этапы перехода">
               <li data-phase="issued" class="is-done">
                 <span class="phase-num">1</span>

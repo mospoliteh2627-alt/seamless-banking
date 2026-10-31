@@ -24,6 +24,13 @@ const DEMO_USER = {
   cards: [{ id: 'card_1', masked: '•• 7712', brand: 'МИР', expires: '09/28' }],
 };
 
+const PAYEE_DIRECTORY = [
+  { account: '40817810000000001234', bank: 'Вектор Банк', name: 'Иван Петров' },
+  { account: '40817810000000005678', bank: 'Вектор Банк', name: 'Мария Соколова' },
+  { account: '40817810000000009999', bank: 'Сбербанк', name: 'Алексей Кузнецов' },
+  { account: '40817810000000002222', bank: 'Т-Банк', name: 'Ольга Морозова' },
+];
+
 const RESEARCH = {
   simulation: {
     observations: 17280,
@@ -118,6 +125,75 @@ class HttpError extends Error {
 }
 
 const iso = (ts = Date.now()) => new Date(ts).toISOString();
+
+function normalizeName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/ё/g, 'е')
+    .replace(/[^a-zа-я\s-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function nameDistance(a, b) {
+  const left = normalizeName(a);
+  const right = normalizeName(b);
+  if (!left || !right) return Math.max(left.length, right.length);
+  const prev = Array.from({ length: right.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= left.length; i += 1) {
+    let diagonal = prev[0];
+    prev[0] = i;
+    for (let j = 1; j <= right.length; j += 1) {
+      const temp = prev[j];
+      prev[j] = Math.min(
+        prev[j] + 1,
+        prev[j - 1] + 1,
+        diagonal + (left[i - 1] === right[j - 1] ? 0 : 1),
+      );
+      diagonal = temp;
+    }
+  }
+  return prev[right.length];
+}
+
+function verifyPayee(input) {
+  const account = String(input.account || '').replace(/\D/g, '');
+  const bank = String(input.bank || '').trim();
+  const recipientName = String(input.recipientName || '').trim();
+  const entry = PAYEE_DIRECTORY.find((item) => item.account === account);
+  const checkedAt = iso();
+  if (!entry) {
+    return {
+      status: 'no_data',
+      account,
+      bank,
+      recipientName,
+      expectedName: null,
+      message: 'Счёт не найден в демо-справочнике — проверьте реквизиты',
+      checkedAt,
+    };
+  }
+  const distance = nameDistance(recipientName, entry.name);
+  const exact = normalizeName(recipientName) === normalizeName(entry.name);
+  const close = !exact && (distance <= 3 || normalizeName(entry.name).includes(normalizeName(recipientName)));
+  const status = exact ? 'match' : close ? 'close_match' : 'no_match';
+  const messages = {
+    match: 'Имя совпадает со счётом получателя',
+    close_match: `Похожее имя: в банке получатель — ${entry.name}`,
+    no_match: `Имя не совпадает: в банке получатель — ${entry.name}`,
+  };
+  return {
+    status,
+    account,
+    bank: bank || entry.bank,
+    recipientName,
+    expectedName: entry.name,
+    expectedBank: entry.bank,
+    distance,
+    message: messages[status],
+    checkedAt,
+  };
+}
 
 function deviceOf(auth) {
   return {
@@ -274,6 +350,10 @@ class Metrics {
       leasesClaimed: 0,
       ticketsIssued: 0,
       handoffsRedeemed: 0,
+      vopChecks: 0,
+      vopMatch: 0,
+      vopClose: 0,
+      vopBlocked: 0,
       handoffFailures: 0,
       submissions: 0,
       wsConnections: 0,
@@ -286,6 +366,15 @@ class Metrics {
 
   inc(name, by = 1) {
     this.counters[name] = (this.counters[name] || 0) + by;
+  }
+
+  seed({ audit = [], drafts = 0 } = {}) {
+    const count = (type) => audit.filter((event) => event.type === type).length;
+    this.counters.ticketsIssued += count('handoff.ticket_issued');
+    this.counters.handoffsRedeemed += count('handoff.redeemed');
+    this.counters.submissions += count('operation.submitted');
+    this.counters.vopChecks += count('payee.verified');
+    this.counters.draftsCreated += drafts;
   }
 
   observeSync(ms) {
@@ -359,6 +448,12 @@ export async function buildApp(options = {}) {
   });
   app.decorate('store', store);
   const metrics = new Metrics();
+  try {
+    const [auditLog, allDrafts] = await Promise.all([store.listAudit(10000), store.listAllDrafts()]);
+    metrics.seed({ audit: auditLog, drafts: allDrafts.length });
+  } catch {
+    /* метрики не должны мешать старту */
+  }
   app.decorate('metrics', metrics);
 
   await app.register(cors, { origin: true, credentials: false });
@@ -569,6 +664,41 @@ export async function buildApp(options = {}) {
     return { ok: true, authLevel: 2, method, token, at: iso() };
   });
 
+  /* --------------------- проверка получателя ----------------------- */
+
+  app.post('/v1/payee/verify', async (request, reply) => {
+    rateLimit(`${request.ip}:payee`, 60, 60_000);
+    const body = request.body || {};
+    const result = verifyPayee(body);
+    metrics.inc('vopChecks');
+    if (result.status === 'match') metrics.inc('vopMatch');
+    if (result.status === 'close_match') metrics.inc('vopClose');
+    if (result.status === 'no_match') metrics.inc('vopBlocked');
+
+    if (body.opId) {
+      const auth = await authenticate(request);
+      const draft = await getOwnedDraft(body.opId, auth);
+      if (draft.status === 'draft') {
+        await store.updateDraft(
+          body.opId,
+          (current) => {
+            current.payee = {
+              ...result,
+              account: String(current.fields?.recipientAccount || '').replace(/\D/g, ''),
+              recipientName: String(current.fields?.recipientName || ''),
+              checkedAt: result.checkedAt,
+            };
+            return { draft: current };
+          },
+          cfg.draftTtlSec,
+        );
+      }
+    }
+
+    await audit('payee.verified', null, { meta: { status: result.status } });
+    return reply.code(200).send(result);
+  });
+
   /* ----------------------------- черновики ------------------------- */
 
   app.post('/v1/drafts', async (request, reply) => {
@@ -749,6 +879,13 @@ export async function buildApp(options = {}) {
           return { error: { status: 409, code: 'VERSION_CONFLICT', draft } };
         }
         draft.fields = { ...draft.fields, ...sanitizeFields(body.fields) };
+        if (draft.payee) {
+          const sameAccount =
+            String(draft.payee.account || '') === String(draft.fields.recipientAccount || '').replace(/\D/g, '');
+          const sameName =
+            normalizeName(draft.payee.recipientName) === normalizeName(draft.fields.recipientName || '');
+          if (!sameAccount || !sameName) draft.payee = null;
+        }
         draft.context = { ...draft.context, ...sanitizeContext(body.context) };
         if (Number.isFinite(body.step)) {
           draft.step = Math.max(1, Math.min(draft.totalSteps, Math.trunc(body.step)));
@@ -810,8 +947,32 @@ export async function buildApp(options = {}) {
     }
     const missing = [];
     let receipt = null;
+    const submitBody = request.body || {};
 
     const current = await getOwnedDraft(request.params.id, auth);
+    const payee = current.payee;
+    if (payee) {
+      const sameAccount =
+        String(payee.account || '') === String(current.fields?.recipientAccount || '').replace(/\D/g, '');
+      const sameName =
+        normalizeName(payee.recipientName) === normalizeName(current.fields?.recipientName || '');
+      if (sameAccount && sameName) {
+        if (payee.status === 'no_match') {
+          throw new HttpError(
+            409,
+            'PAYEE_MISMATCH',
+            `Имя не совпадает с получателем: ${payee.expectedName || 'проверьте реквизиты'}`,
+          );
+        }
+        if (payee.status === 'close_match' && !submitBody.acceptCloseMatch) {
+          throw new HttpError(
+            409,
+            'PAYEE_CLOSE_MATCH',
+            `Похожее имя. Подтвердите получателя: ${payee.expectedName || ''}`,
+          );
+        }
+      }
+    }
     const today = iso().slice(0, 10);
     const submittedToday = (await store.listDrafts(auth.sub))
       .filter((draft) => draft.status === 'submitted' && String(draft.submittedAt || '').startsWith(today))

@@ -1080,3 +1080,221 @@ button,
     justify-self: start;
   }
 }
+
+/* ---------- проверка получателя (VoP) ---------- */
+
+.payee-check {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin: -2px 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f8faff;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.payee-check[hidden] {
+  display: none;
+}
+
+.payee-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e8eef8;
+  color: #5a6b84;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.payee-check.is-checking .payee-icon {
+  background: transparent;
+  border: 2px solid #c9d8fb;
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
+}
+
+.payee-check.is-match {
+  border-color: #bfe8df;
+  background: #f1fbf8;
+}
+
+.payee-check.is-match .payee-icon {
+  background: var(--mint);
+  color: #fff;
+}
+
+.payee-check.is-match .payee-icon::before {
+  content: "✓";
+}
+
+.payee-check.is-close {
+  border-color: #f0d9b0;
+  background: #fffaf0;
+}
+
+.payee-check.is-close .payee-icon {
+  background: #e6a23c;
+  color: #fff;
+}
+
+.payee-check.is-close .payee-icon::before {
+  content: "!";
+}
+
+.payee-check.is-mismatch {
+  border-color: #f1c4c4;
+  background: #fff5f5;
+}
+
+.payee-check.is-mismatch .payee-icon {
+  background: var(--danger);
+  color: #fff;
+}
+
+.payee-check.is-mismatch .payee-icon::before {
+  content: "×";
+}
+
+.payee-check.is-unknown .payee-icon::before {
+  content: "?";
+}
+
+.payee-copy strong {
+  display: block;
+  font-size: 12.5px;
+}
+
+.payee-copy p {
+  margin-top: 1px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+.payee-fix {
+  border: 1px solid #e6c48c;
+  border-radius: 8px;
+  padding: 6px 10px;
+  background: #fff;
+  color: #8a5a12;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.payee-fix:hover {
+  background: #fff4e2;
+}
+
+.payee-confirm {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin: 12px 0;
+  padding: 11px 12px;
+  border: 1px dashed #e6c48c;
+  border-radius: 11px;
+  background: #fffaf0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #7c5316;
+  cursor: pointer;
+}
+
+.payee-confirm[hidden] {
+  display: none;
+}
+
+.payee-confirm input {
+  margin-top: 2px;
+}
+
+.payee-check.is-match + .form-actions .btn,
+.payee-check.is-close + .form-actions .btn {
+  box-shadow: 0 12px 26px -16px rgba(31, 87, 224, 0.6);
+}
+
+/* ---------- лендинг: блок доверия ---------- */
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 26px;
+}
+
+.trust-card {
+  padding: 20px;
+  border: 1px solid #e3e9f2;
+  border-radius: 16px;
+  background: #fff;
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.trust-card:hover {
+  transform: translateY(-3px);
+  border-color: #c9d8f5;
+  box-shadow: 0 18px 36px -26px rgba(11, 31, 58, 0.45);
+}
+
+.trust-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 12px;
+  border-radius: 11px;
+  background: #eef3ff;
+  color: var(--accent);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.trust-card h3 {
+  margin: 0 0 6px;
+  font-size: 16px;
+  letter-spacing: -0.2px;
+}
+
+.trust-card p {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #56657a;
+}
+
+.trust-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.trust-actions .btn {
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 11px;
+}
+
+.view-landing .trust-actions .btn-ghost {
+  background: #fff;
+  border-color: #dbe3ee;
+  color: var(--ink);
+}
+
+.view-landing .trust-actions .btn-ghost:hover {
+  border-color: #b9ccff;
+  background: #f7f9ff;
+}
+
+@media (max-width: 900px) {
+  .trust-grid {
+    grid-template-columns: 1fr;
+  }
+}
