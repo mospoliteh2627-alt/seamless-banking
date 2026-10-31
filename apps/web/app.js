@@ -91,6 +91,9 @@ const els = {
   infoEyebrow: $('#info-eyebrow'),
   infoBody: $('#info-body'),
   toast: $('#toast'),
+  btnGuide: $('#btn-guide'),
+  guideModal: $('#guide-modal'),
+  guideSteps: $('#guide-steps'),
 };
 
 /* ------------------------------------------------------------------ */
@@ -239,6 +242,101 @@ function closeA11y() {
   document.body.style.overflow = '';
   document.removeEventListener('keydown', onModalKeydown);
   state.lastFocus?.focus?.();
+}
+
+/* ------------------------------------------------------------------ */
+/* Гайд «как это работает»                                             */
+/* ------------------------------------------------------------------ */
+
+function markGuide(step) {
+  if (!state.guideDone) state.guideDone = new Set();
+  state.guideDone.add(Number(step));
+  renderGuide();
+}
+
+function renderGuide() {
+  if (!els.guideSteps) return;
+  const done = state.guideDone || new Set();
+  els.guideSteps.querySelectorAll('li').forEach((item) => {
+    const n = Number(item.dataset.guideStep);
+    const isDone = done.has(n);
+    item.classList.toggle('is-done', isDone);
+    const button = item.querySelector('button');
+    if (button && isDone) {
+      button.textContent = 'Готово';
+      button.disabled = true;
+    }
+  });
+}
+
+function openGuide() {
+  state.lastFocus = document.activeElement;
+  els.guideModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', onModalKeydown);
+  renderGuide();
+  requestAnimationFrame(() => $('#guide-title')?.focus());
+}
+
+function closeGuide() {
+  els.guideModal.classList.add('hidden');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', onModalKeydown);
+  state.lastFocus?.focus?.();
+}
+
+function fillDemoTransfer() {
+  const demo = {
+    recipientName: 'Иван Петров',
+    recipientBank: 'Вектор Банк',
+    recipientAccount: '40817810000000001234',
+    amount: '24 500',
+    purpose: 'Перевод личных средств',
+  };
+  for (const [key, value] of Object.entries(demo)) {
+    const field = $(`#f-${key}`);
+    if (field) field.value = value;
+  }
+  state.step = 2;
+  renderStep();
+  updateSummary();
+  scheduleSave();
+}
+
+async function runGuideAction(action) {
+  if (action === 'start') {
+    if (!els.viewApp || els.viewApp.classList.contains('hidden')) {
+      closeGuide();
+      showLogin();
+      toast('Войдите в демо — и сценарий начнётся с главного экрана');
+      return;
+    }
+    closeGuide();
+    await startTransfer();
+    fillDemoTransfer();
+    return;
+  }
+  if (action === 'handoff') {
+    closeGuide();
+    if (!state.draft) {
+      await startTransfer();
+      fillDemoTransfer();
+    }
+    await openHandoff();
+    return;
+  }
+  if (action === 'phone') {
+    if (!state.handoff) {
+      toast('Сначала выпустите QR-билет', 'error');
+      return;
+    }
+    els.btnDemoPhone?.click();
+    return;
+  }
+  if (action === 'claim') {
+    closeGuide();
+    await claimDraft();
+  }
 }
 
 function openInfo({ title, eyebrow = 'Сервис', html, after }) {
@@ -684,7 +782,10 @@ async function startTransfer(existing = null) {
     applyDraft(draft, { applyProfile: !isNew });
     applyReadOnly(!draft.canEdit);
     showScreen('transfer');
-    if (isNew) scheduleSave();
+    if (isNew) {
+      scheduleSave();
+      markGuide(1);
+    }
     await loadDrafts();
     requestAnimationFrame(() => focusFromContext(draft.context));
   } catch (error) {
@@ -1073,6 +1174,7 @@ async function openHandoff() {
     $('#handoff-title').focus?.();
     startHandoffCountdown(data.expiresAt, data.ttlSec);
     state.handoffPoll = setInterval(checkHandoffStatus, 1500);
+    markGuide(2);
     els.btnHandoff.blur();
   } catch (error) {
     toast(error.message, 'error');
@@ -1116,6 +1218,7 @@ function handoffComplete(deviceName, timing = {}) {
   const redeemMs = Number.isFinite(timing?.redeemMs) ? Math.max(0, Math.round(timing.redeemMs)) : null;
   const shortMs = (value) =>
     value < 1 ? '<1 мс' : value < 1000 ? `${value} мс` : `${(value / 1000).toFixed(1).replace('.', ',')} с`;
+  markGuide(3);
   setHandoffPhase('complete');
   phaseTime('scanned', syncMs === null ? '✓' : shortMs(syncMs));
   phaseTime('stepup', '✓');
@@ -1206,6 +1309,7 @@ async function claimDraft() {
     applyDraft(data.draft);
     applyReadOnly(false);
     setSaveStatus('saved', 'Управление возвращено');
+    markGuide(4);
     toast('Управление снова на этом устройстве');
   } catch (error) {
     toast(error.message, 'error');
@@ -1397,6 +1501,13 @@ $$('[data-close-modal]').forEach((element) => {
 });
 
 $('#btn-a11y').addEventListener('click', openA11y);
+els.btnGuide?.addEventListener('click', openGuide);
+$$('[data-close-guide]').forEach((element) => {
+  element.addEventListener('click', () => closeGuide());
+});
+$$('[data-guide-action]').forEach((button) => {
+  button.addEventListener('click', () => runGuideAction(button.dataset.guideAction));
+});
 $$('[data-close-a11y]').forEach((element) => {
   element.addEventListener('click', () => closeA11y());
 });

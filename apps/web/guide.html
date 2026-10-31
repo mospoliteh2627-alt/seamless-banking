@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Вектор Банк — как это работает</title>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <style>
+      :root {
+        --ink: #0b1f3a;
+        --muted: #56657a;
+        --line: #e4e9f1;
+        --accent: #1f57e0;
+        --mint: #16c2a3;
+        --bg: #f2f5fa;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        color: var(--ink);
+        background: var(--bg);
+        line-height: 1.55;
+      }
+      .wrap { max-width: 900px; margin: 0 auto; padding: 28px 20px 64px; }
+      .top { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 26px; }
+      .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; color: inherit; text-decoration: none; }
+      .mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--ink); color: #fff; }
+      .back { color: var(--accent); font-weight: 600; font-size: 13px; text-decoration: none; }
+      h1 { font-size: 34px; line-height: 1.15; letter-spacing: -0.8px; margin: 0 0 10px; }
+      h2 { font-size: 20px; margin: 34px 0 12px; letter-spacing: -0.3px; }
+      p { margin: 0 0 10px; }
+      .lead { color: var(--muted); font-size: 16px; max-width: 680px; }
+      .card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; margin-top: 14px; }
+      ol, ul { margin: 0; padding-left: 22px; }
+      li { margin: 7px 0; }
+      .steps li strong { display: block; }
+      .steps li span { color: var(--muted); font-size: 13.5px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+      th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
+      code { background: #eef2f9; border-radius: 5px; padding: 1px 5px; font-size: 12.5px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+      .chip { padding: 6px 10px; border-radius: 999px; background: #eef3ff; color: #1746c2; font-size: 12px; font-weight: 600; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+      .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 11px; background: var(--accent); color: #fff; font-weight: 700; font-size: 14px; text-decoration: none; }
+      .btn.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+      .note { font-size: 12.5px; color: var(--muted); margin-top: 12px; }
+      @media (max-width: 560px) { h1 { font-size: 27px; } .card { padding: 14px; } table { font-size: 13px; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="top">
+        <a class="brand" href="/">
+          <span class="mark" aria-hidden="true">▲</span>
+          Вектор<span style="font-weight: 400">банк</span>
+        </a>
+        <a class="back" href="/">← Открыть демо</a>
+      </div>
+
+      <h1>Как это работает</h1>
+      <p class="lead">
+        «Вектор Банк» — прототип бесшовного перехода: операция, начатая в интернет-банке, продолжается
+        в мобильном приложении с того же шага — с теми же полями, фокусом и позицией курсора.
+      </p>
+
+      <div class="card">
+        <h2 style="margin-top: 0">Сценарий за 3 минуты</h2>
+        <ol class="steps">
+          <li><strong>Войдите в веб-демо.</strong><span>Телефон любой, код доступа <code>0000</code>. Откроется главный экран клиента.</span></li>
+          <li><strong>Нажмите «Как это работает» → «Начать».</strong><span>Появится перевод с демо-получателем и суммой. Черновик уже сохранён на сервере.</span></li>
+          <li><strong>«Открыть QR».</strong><span>Выпускается одноразовый билет на 90 секунд. В окне видно этапы перехода и время каждого шага.</span></li>
+          <li><strong>«Открыть телефон».</strong><span>В новой вкладке запускается мобильный клиент, сам подхватывает операцию и подтверждает Face ID.</span></li>
+          <li><strong>Вернитесь в веб.</strong><span>Он уже в режиме просмотра: черновик восстановлен на телефоне. Нажмите «Вернуть управление», чтобы продолжить здесь.</span></li>
+          <li><strong>Отправьте перевод.</strong><span>Результат, номер операции и идемпотентность повторной отправки — на экране успеха.</span></li>
+        </ol>
+        <div class="actions">
+          <a class="btn" href="/">Открыть интернет-банк</a>
+          <a class="btn ghost" href="/m">Демо-телефон</a>
+          <a class="btn ghost" href="/research">Панель исследования</a>
+        </div>
+      </div>
+
+      <h2>Роли и доступы</h2>
+      <div class="card">
+        <table>
+          <tr><th>Роль</th><th>Вход</th><th>Что видит</th></tr>
+          <tr><td>Клиент</td><td>демо-вход, код <code>0000</code></td><td>счета, переводы, переход, история, исследование</td></tr>
+          <tr><td>Поддержка</td><td>ADMIN-код <code>ADMIN-2026</code></td><td>процессы клиентов, аудит</td></tr>
+          <tr><td>Аналитик</td><td>ADMIN-код <code>ADMIN-2026</code></td><td>воронка, латентность, метрики перехода</td></tr>
+          <tr><td>Администратор</td><td>ADMIN-код <code>ADMIN-2026</code></td><td>полный админ-контур и экспорт</td></tr>
+        </table>
+        <p class="note">Служебные роли открываются на странице входа при выборе роли и вводе ADMIN-кода — так демонстрация остаётся безопасной.</p>
+      </div>
+
+      <h2>Что означают элементы</h2>
+      <div class="card">
+        <ul>
+          <li><strong>Билет</strong> — одноразовый пропуск перехода (QR + 6 цифр), живёт 90 секунд.</li>
+          <li><strong>Step-up</strong> — подтверждение владельца на телефоне: Face ID или PIN <code>0000</code>.</li>
+          <li><strong>Lease</strong> — «право редактирования»: пока операция на телефоне, веб только смотрит.</li>
+          <li><strong>Вернуть управление</strong> — забрать операцию обратно на веб без потери данных.</li>
+          <li><strong>Процесс</strong> — стадии «Создана → Заполнение → Подтверждение → Переход → Исполнена».</li>
+          <li><strong>Телеметрия</strong> — отдельно время сервера и время до подключения (QR → Face ID).</li>
+        </ul>
+        <div class="chips">
+          <span class="chip">H1 · короче путь</span>
+          <span class="chip">H2 · контекст без потерь</span>
+          <span class="chip">H3 · управление возвращается</span>
+        </div>
+      </div>
+
+      <h2>Проверочные сценарии</h2>
+      <div class="card">
+        <table>
+          <tr><th>Сценарий</th><th>Что сделать</th><th>Ожидаемый результат</th></tr>
+          <tr><td>Основной переход</td><td>перевод → QR → демо-телефон → Face ID</td><td>телефон на том же шаге, веб в режиме просмотра</td></tr>
+          <tr><td>Возврат управления</td><td>после перехода — «Вернуть управление»</td><td>веб снова редактирует, данные сохранены</td></tr>
+          <tr><td>Истёкший код</td><td>открыть QR и подождать 90 секунд</td><td>код гаснет, появляется «Обновить»</td></tr>
+          <tr><td>Ручной код</td><td>в демо-телефоне ввести 6 цифр</td><td>операция находится без QR</td></tr>
+          <tr><td>Конкурентное редактирование</td><td>два браузера, одна операция</td><td>второй уходит в просмотр, побеждает lease</td></tr>
+          <tr><td>Роли</td><td>служебный вход с ADMIN-кодом</td><td>клиенту админ-контур закрыт (403)</td></tr>
+        </table>
+      </div>
+
+      <p class="note">
+        Полная инструкция и разбор международного опыта — в репозитории: <code>docs/КАК-РАБОТАТЬ.md</code>,
+        <code>docs/МЕЖДУНАРОДНЫЙ-ОПЫТ.md</code>, <code>docs/РОАДМАП.md</code>.
+      </p>
+    </div>
+  </body>
+</html>

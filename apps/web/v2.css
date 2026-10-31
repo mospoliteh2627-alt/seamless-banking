@@ -940,3 +940,143 @@ button,
     transform: none;
   }
 }
+
+/* ---------- гайд «как это работает» ---------- */
+
+.guide-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.guide-trigger:hover {
+  color: var(--ink);
+  border-color: #c9d6ea;
+  background: #f7f9fd;
+}
+
+#guide-modal .modal-card {
+  width: min(600px, 100%);
+}
+
+.guide-steps {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+}
+
+.guide-steps li {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 11px 13px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fbfcff;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.guide-steps li.is-done {
+  border-color: #bfe8df;
+  background: #f1fbf8;
+}
+
+.guide-num {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e8eef8;
+  color: #5a6b84;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.guide-steps li.is-done .guide-num {
+  background: var(--mint);
+  color: #fff;
+}
+
+.guide-steps li.is-done .guide-body strong::after {
+  content: " ✓";
+  color: var(--mint);
+}
+
+.guide-body strong {
+  font-size: 13.5px;
+}
+
+.guide-body p {
+  margin-top: 2px;
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--muted);
+}
+
+.guide-steps .btn {
+  white-space: nowrap;
+}
+
+.guide-steps .btn[disabled] {
+  opacity: 0.5;
+}
+
+.guide-proof {
+  margin-top: 15px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f5f8ff;
+  border: 1px dashed #c9d8fb;
+  font-size: 12px;
+  color: #3f5f96;
+}
+
+.guide-proof ul {
+  margin: 7px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 3px;
+}
+
+.guide-help {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.guide-help a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 720px) {
+  .guide-trigger span {
+    display: none;
+  }
+
+  .guide-steps li {
+    grid-template-columns: 28px minmax(0, 1fr);
+  }
+
+  .guide-steps .btn {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

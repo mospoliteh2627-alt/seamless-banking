@@ -247,6 +247,15 @@
           <a class="nav-link" href="/VectorBank.apk" download title="Скачать мобильное приложение (APK)">Скачать приложение</a>
         </nav>
 
+        <button class="guide-trigger" type="button" id="btn-guide" title="Как это работает">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M9.5 9a2.5 2.5 0 1 1 3.6 2.3c-.7.4-1.1 1-1.1 1.8v.4" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span>Как это работает</span>
+        </button>
+
         <button class="icon-btn a11y-btn" type="button" id="btn-a11y" title="Настройки доступности" aria-label="Настройки доступности">
           <span aria-hidden="true">Aa</span>
         </button>
@@ -598,6 +607,69 @@
           <button class="btn btn-ghost btn-block" type="button" id="btn-copy-link">Скопировать ссылку</button>
         </div>
         <p class="hint">Демо-телефон откроется в новой вкладке, примет операцию и подтвердит Face ID. Ссылка содержит одноразовый билет — не пересылайте её другим людям.</p>
+      </div>
+    </div>
+
+
+    <!-- ГАЙД: КАК ЭТО РАБОТАЕТ -->
+    <div class="modal hidden" id="guide-modal" role="dialog" aria-modal="true" aria-labelledby="guide-title">
+      <div class="modal-backdrop" data-close-guide></div>
+      <div class="modal-card guide-card">
+        <button class="icon-btn modal-close" type="button" data-close-guide aria-label="Закрыть">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
+        <p class="eyebrow">Сценарий демонстрации</p>
+        <h2 id="guide-title" tabindex="-1">Один черновик — два канала</h2>
+        <p class="muted">Пройдите путь клиента за 3 минуты: каждый шаг выполняется в реальном приложении, без заранее записанного видео.</p>
+
+        <ol class="guide-steps" id="guide-steps">
+          <li data-guide-step="1">
+            <span class="guide-num">1</span>
+            <div class="guide-body">
+              <strong>Начните перевод в вебе</strong>
+              <p>Подставим демо-получателя и сумму. Черновик сразу сохранится на сервере.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" type="button" data-guide-action="start">Начать</button>
+          </li>
+          <li data-guide-step="2">
+            <span class="guide-num">2</span>
+            <div class="guide-body">
+              <strong>Выпустите QR-билет</strong>
+              <p>Одноразовый билет на 90 секунд. В окне видно этапы и тайминги.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" type="button" data-guide-action="handoff">Открыть QR</button>
+          </li>
+          <li data-guide-step="3">
+            <span class="guide-num">3</span>
+            <div class="guide-body">
+              <strong>Подхватите на телефоне</strong>
+              <p>Демо-телефон откроется в новой вкладке, подтвердит Face ID и восстановит шаг.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" type="button" data-guide-action="phone">Открыть телефон</button>
+          </li>
+          <li data-guide-step="4">
+            <span class="guide-num">4</span>
+            <div class="guide-body">
+              <strong>Верните управление</strong>
+              <p>Операция снова редактируется в вебе — без потери данных и повторного ввода.</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" type="button" data-guide-action="claim">Вернуть</button>
+          </li>
+        </ol>
+
+        <div class="guide-proof">
+          <strong>Что это доказывает</strong>
+          <ul>
+            <li>H1 — путь короче: нет повторного ввода и поиска шага.</li>
+            <li>H2 — контекст переносится полностью: поля, шаг, фокус, курсор.</li>
+            <li>H3 — управление можно вернуть: канал не «захватывает» операцию.</li>
+          </ul>
+        </div>
+
+        <div class="guide-help">
+          <span>Нужен разбор ролей и проверочных сценариев?</span>
+          <a href="/guide.html" target="_blank" rel="noopener">Открыть инструкцию</a>
+        </div>
       </div>
     </div>
 
