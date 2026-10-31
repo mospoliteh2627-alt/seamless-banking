@@ -134,10 +134,15 @@ async function restore() {
 }
 
 function prefillLast() {
+  const params = new URLSearchParams(location.search);
+  const urlCode = (params.get('code') || '').replace(/\D/g, '').slice(0, 6);
+  const urlTicket = params.get('ticket') || params.get('t') || '';
   const last = localStorage.getItem('sb.lastHandoff');
   const code = localStorage.getItem('sb.lastCode');
-  if (last && !$('#m-ticket').value) $('#m-ticket').value = last;
-  if (code && !$('#m-code').value) $('#m-code').value = code;
+  if (urlTicket && !$('#m-ticket').value) $('#m-ticket').value = urlTicket;
+  else if (last && !$('#m-ticket').value) $('#m-ticket').value = last;
+  if (urlCode && !$('#m-code').value) $('#m-code').value = urlCode;
+  else if (code && !$('#m-code').value) $('#m-code').value = code;
 }
 
 /* ------------------------------------------------------------------ */
@@ -186,6 +191,8 @@ async function preview() {
     $('#p-bank').textContent = data.preview.recipientBank || '—';
     $('#p-amount').textContent = data.preview.amount ? formatMoney(data.preview.amount) : 'не указана';
     $('#p-step').textContent = `${data.preview.step} из ${data.preview.totalSteps}`;
+    const stepTitle = $('#m-confirm-step');
+    if (stepTitle) stepTitle.textContent = `Шаг ${data.preview.step} из ${data.preview.totalSteps}`;
     show('m-confirm');
   } catch (error) {
     toast(error.message, 'error');
@@ -434,4 +441,11 @@ $('#clock').textContent = new Intl.DateTimeFormat('ru-RU', {
   minute: '2-digit',
 }).format(new Date());
 
-restore();
+const demoTicket = new URLSearchParams(location.search);
+const hasDemoHandoff = Boolean(demoTicket.get('code') || demoTicket.get('ticket') || demoTicket.get('t'));
+if (hasDemoHandoff && !state.token) {
+  // Демо-переход: новый таб уже знает код — входим и сразу ищем операцию.
+  login().then(() => preview()).catch(() => {});
+} else {
+  restore();
+}

@@ -1,9 +1,11 @@
-const CACHE = 'vector-bank-shell-v4';
+const CACHE = 'vector-bank-shell-v5';
 const SHELL = [
   '/',
   '/index.html',
   '/styles.css',
+  '/v2.css',
   '/app.js',
+  '/landing-demo.js',
   '/icon.svg',
   '/manifest.webmanifest',
 ];

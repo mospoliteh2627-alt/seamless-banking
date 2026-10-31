@@ -9,6 +9,7 @@
     <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" href="/icon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/v2.css?v=20261031" />
   </head>
   <body>
     <div class="ambient" aria-hidden="true">
@@ -44,12 +45,73 @@
             <div class="hero-actions">
               <a class="btn btn-primary" href="/VectorBank.apk" download>Скачать мобильное приложение</a>
               <a class="btn btn-ghost" href="/research">Пройти эксперимент</a>
-              <button class="btn btn-ghost" id="btn-go-login" type="button">Открыть веб-демо</button>
+            </div>
+            <div class="hero-proof">
+              <span><b>15 мс</b> синхронизация</span>
+              <span><b>0</b> повторных вводов</span>
+              <span><b>2</b> канала · 1 операция</span>
+              <button class="hero-link" id="btn-go-login" type="button">Открыть веб-демо →</button>
             </div>
           </div>
-          <div class="hero-phone">
-            <div class="phone-frame">
-              <img src="/hero-phone.png" alt="Мобильное приложение Векторбанк" />
+          <div class="handoff-scene" id="handoffScene" aria-label="Анимированный сценарий бесшовного перехода">
+            <div class="scene-head">
+              <span class="scene-live" aria-hidden="true"></span>
+              <span class="scene-title">Живой сценарий перехода</span>
+              <button class="scene-replay" id="sceneReplay" type="button" aria-label="Повторить сценарий">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+              </button>
+            </div>
+            <div class="scene-canvas">
+              <div class="scene-browser">
+                <div class="sb-bar"><span></span><span></span><span></span><em>vectorbank.ru</em></div>
+                <div class="sb-body">
+                  <p class="sb-label">Перевод · шаг 2 из 3</p>
+                  <div class="sb-row"><span>Получатель</span><strong>Иван Петров</strong></div>
+                  <div class="sb-row"><span>Сумма</span><strong class="sb-amount">24 500 ₽</strong></div>
+                  <div class="sb-progress"><i></i></div>
+                  <div class="sb-cta">Продолжить на телефоне</div>
+                  <div class="sb-ticket">
+                    <span class="sb-ticket-code">4 8 2 9 1 3</span>
+                    <small>билет · 90 секунд</small>
+                  </div>
+                  <div class="sb-viewonly">Режим просмотра · телефон подключён</div>
+                </div>
+              </div>
+              <div class="scene-beam" aria-hidden="true"><i></i></div>
+              <div class="scene-phone">
+                <div class="sp-screen">
+                  <div class="sp-status"><span>9:41</span><span class="sp-dots">▮▮▮</span></div>
+                  <div class="sp-brand">Вектор Банк</div>
+                  <div class="sp-view sp-idle">
+                    <p class="sp-hint">Начните перевод на компьютере — продолжите здесь</p>
+                  </div>
+                  <div class="sp-view sp-scan">
+                    <div class="sp-qr" aria-hidden="true"></div>
+                    <p>Наведите камеру на QR</p>
+                  </div>
+                  <div class="sp-view sp-face">
+                    <div class="sp-ring" aria-hidden="true"></div>
+                    <p>Face ID</p>
+                    <small>подтвердите операцию</small>
+                  </div>
+                  <div class="sp-view sp-draft">
+                    <p class="sp-ok">Черновик восстановлен</p>
+                    <div class="sp-row"><span>Иван Петров</span><strong>24 500 ₽</strong></div>
+                    <div class="sp-step">Шаг 2 · фокус на сумме</div>
+                    <div class="sp-cta">Подтвердить</div>
+                  </div>
+                </div>
+              </div>
+              <div class="scene-badge" id="sceneBadge">веб</div>
+            </div>
+            <div class="scene-rail">
+              <ol id="sceneRail">
+                <li data-stage="1">Начато в вебе</li>
+                <li data-stage="2">QR выпущен</li>
+                <li data-stage="3">Face ID</li>
+                <li data-stage="4">Продолжено</li>
+              </ol>
+              <p class="scene-note" id="sceneNote" aria-live="polite">Черновик создан в браузере</p>
             </div>
           </div>
         </div>
@@ -477,49 +539,65 @@
             <path d="M6 6l12 12M18 6L6 18" />
           </svg>
         </button>
-        <p class="eyebrow">Бесшовный переход</p>
+        <p class="eyebrow"><span class="ho-dot" aria-hidden="true"></span> Бесшовный переход · live</p>
         <h2 id="handoff-title" tabindex="-1">Продолжить на телефоне</h2>
-        <p class="muted">Откройте приложение «Вектор Банк» → «Сканировать QR». Черновик восстановится на том же шаге.</p>
+        <p class="muted">Отсканируйте QR приложением «Вектор Банк» или откройте демо-телефон — переход выполнится в этой же сессии.</p>
 
-        <div class="qr-wrap">
-          <img id="qr-image" alt="QR-код для продолжения операции на телефоне" width="240" height="240" />
-          <div class="qr-expired hidden" id="qr-expired">
-            <strong>Код истёк</strong>
-            <button class="btn btn-secondary" type="button" id="btn-refresh-ticket">Обновить</button>
+        <div class="handoff-grid">
+          <div class="qr-col">
+            <div class="qr-wrap">
+              <img id="qr-image" alt="QR-код для продолжения операции на телефоне" width="240" height="240" />
+              <div class="qr-expired hidden" id="qr-expired">
+                <strong>Код истёк</strong>
+                <button class="btn btn-secondary" type="button" id="btn-refresh-ticket">Обновить</button>
+              </div>
+            </div>
+            <div class="qr-progress" aria-hidden="true"><i id="qr-progress-bar"></i></div>
+            <div class="handoff-meta">
+              <span class="timer" id="handoff-timer">01:30</span>
+              <span class="status" id="handoff-status">Ожидаем сканирование…</span>
+            </div>
+            <div class="handoff-code">
+              <span>Код</span>
+              <strong id="handoff-code">— — — — — —</strong>
+            </div>
+          </div>
+
+          <div class="ho-stages">
+            <ol class="handoff-timeline" id="handoff-timeline" aria-label="Этапы перехода">
+              <li data-phase="issued" class="is-done">
+                <span class="phase-num">1</span>
+                <span class="phase-body"><strong>Билет выпущен</strong><small>Одноразовый · 90 с</small></span>
+                <em class="phase-time" data-time="issued">0 мс</em>
+              </li>
+              <li data-phase="scanned" class="is-active">
+                <span class="phase-num">2</span>
+                <span class="phase-body"><strong>Ожидаем телефон</strong><small>Сканируйте QR или введите код</small></span>
+                <em class="phase-time" data-time="scanned">—</em>
+              </li>
+              <li data-phase="stepup">
+                <span class="phase-num">3</span>
+                <span class="phase-body"><strong>Step-up</strong><small>Face ID или PIN</small></span>
+                <em class="phase-time" data-time="stepup">—</em>
+              </li>
+              <li data-phase="restored">
+                <span class="phase-num">4</span>
+                <span class="phase-body"><strong>Черновик восстановлен</strong><small>Тот же шаг и фокус</small></span>
+                <em class="phase-time" data-time="restored">—</em>
+              </li>
+            </ol>
+            <p class="ho-telemetry" id="handoff-telemetry" aria-live="polite">Билет выпущен · ожидаем подключение</p>
           </div>
         </div>
 
-        <div class="handoff-code">
-          <span>Код для ручного ввода</span>
-          <strong id="handoff-code">— — — — — —</strong>
+        <div class="ho-actions">
+          <button class="btn btn-secondary btn-block" type="button" id="btn-demo-phone">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg>
+            Открыть демо-телефон
+          </button>
+          <button class="btn btn-ghost btn-block" type="button" id="btn-copy-link">Скопировать ссылку</button>
         </div>
-
-        <div class="handoff-meta">
-          <span class="timer" id="handoff-timer">01:30</span>
-          <span class="status" id="handoff-status">Ожидаем сканирование…</span>
-        </div>
-
-        <ol class="handoff-timeline" id="handoff-timeline" aria-label="Этапы перехода">
-          <li data-phase="issued" class="is-done">
-            <span class="phase-num">1</span>
-            <span><strong>Билет выпущен</strong><small>Одноразовый · 90 секунд</small></span>
-          </li>
-          <li data-phase="scanned" class="is-active">
-            <span class="phase-num">2</span>
-            <span><strong>Ожидаем телефон</strong><small>Сканируйте QR или введите код</small></span>
-          </li>
-          <li data-phase="stepup">
-            <span class="phase-num">3</span>
-            <span><strong>Step-up</strong><small>Face ID или PIN</small></span>
-          </li>
-          <li data-phase="restored">
-            <span class="phase-num">4</span>
-            <span><strong>Черновик восстановлен</strong><small>Тот же шаг и фокус</small></span>
-          </li>
-        </ol>
-
-        <button class="btn btn-ghost btn-block" type="button" id="btn-copy-link">Скопировать ссылку</button>
-        <p class="hint">Ссылка содержит одноразовый билет. Не пересылайте её другим людям.</p>
+        <p class="hint">Демо-телефон откроется в новой вкладке, примет операцию и подтвердит Face ID. Ссылка содержит одноразовый билет — не пересылайте её другим людям.</p>
       </div>
     </div>
 
@@ -578,6 +656,7 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
-    <script type="module" src="/app.js?v=20261020"></script>
+    <script type="module" src="/landing-demo.js?v=20261031"></script>
+    <script type="module" src="/app.js?v=20261031"></script>
   </body>
 </html>

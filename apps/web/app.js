@@ -1,7 +1,7 @@
 /* global crypto, navigator, location */
 
 const API_PREFIX = '/v1';
-const UI_VERSION = '2026.10.20';
+const UI_VERSION = '2026.10.31';
 document.documentElement.dataset.uiVersion = UI_VERSION;
 console.info(`Vector Bank UI ${UI_VERSION}`);
 
@@ -25,6 +25,8 @@ const state = {
   handoffPoll: null,
   handoffStatusTimer: null,
   handoffStartedAt: 0,
+  handoffIssuedAt: 0,
+  handoffClosing: false,
   submitKey: null,
   a11y: { fontScale: 1, contrast: false, reduceMotion: false },
   lastFocus: null,
@@ -80,6 +82,9 @@ const els = {
   handoffCode: $('#handoff-code'),
   handoffStatus: $('#handoff-status'),
   handoffTimer: $('#handoff-timer'),
+  handoffTelemetry: $('#handoff-telemetry'),
+  qrBar: $('#qr-progress-bar'),
+  btnDemoPhone: $('#btn-demo-phone'),
   a11yModal: $('#a11y-modal'),
   infoModal: $('#info-modal'),
   infoTitle: $('#info-title'),
@@ -985,7 +990,7 @@ function handleEvent(message) {
   }
 
   if (message.type === 'handoff.redeemed') {
-    setHandoffPhase('complete');
+    handoffComplete(payload.deviceName);
     const draft = payload.draft;
     if (draft && draft.id === state.draft?.id) {
       state.draft = { ...state.draft, ...draft };
@@ -995,14 +1000,13 @@ function handleEvent(message) {
       applyReadOnly(true);
     }
     const elapsed = state.handoffStartedAt
-      ? Math.max(0.1, (Date.now() - state.handoffStartedAt) / 1000).toFixed(1)
+      ? Math.max(0.1, (Date.now() - state.handoffStartedAt) / 1000).toFixed(1).replace('.', ',')
       : null;
     showHandoffBanner(
       `Операция продолжена на ${payload.deviceName || 'телефоне'}`,
       `Черновик, шаг и позиция курсора восстановлены в мобильном приложении.${elapsed ? ` Время перехода: ${elapsed} с.` : ''}`,
     );
     toast(`Бесшовный переход выполнен: ${payload.deviceName || 'телефон'}`);
-    setTimeout(() => closeHandoff(false), 700);
     return;
   }
 
@@ -1049,40 +1053,102 @@ async function openHandoff() {
     });
     state.handoff = data;
     state.handoffStartedAt = Date.now();
+    state.handoffIssuedAt = Date.now();
+    state.handoffClosing = false;
     localStorage.setItem('sb.lastHandoff', data.deeplink);
     localStorage.setItem('sb.lastCode', data.code);
     els.qrImage.src = data.qrSvg;
     els.qrExpired.classList.add('hidden');
     els.handoffCode.textContent = data.code.split('').join(' ');
     els.handoffStatus.textContent = 'Ожидаем сканирование…';
+    resetHandoffTimeline();
     resetHandoffPhase();
     els.modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
     state.lastFocus = document.activeElement;
     document.addEventListener('keydown', onModalKeydown);
     $('#handoff-title').focus?.();
-    startHandoffCountdown(data.expiresAt);
-    state.handoffPoll = setInterval(checkHandoffStatus, 2000);
+    startHandoffCountdown(data.expiresAt, data.ttlSec);
+    state.handoffPoll = setInterval(checkHandoffStatus, 1500);
     els.btnHandoff.blur();
   } catch (error) {
     toast(error.message, 'error');
   }
 }
 
-function startHandoffCountdown(expiresAt) {
+function setRingProgress(ratio) {
+  if (!els.qrBar) return;
+  const clamped = Math.min(1, Math.max(0, ratio));
+  els.qrBar.style.width = `${(clamped * 100).toFixed(1)}%`;
+  els.qrBar.classList.toggle('is-low', clamped <= 0.22);
+}
+
+function phaseTime(phase, text) {
+  const node = document.querySelector(`#handoff-timeline .phase-time[data-time="${phase}"]`);
+  if (node) node.textContent = text;
+}
+
+function resetHandoffTimeline() {
+  document.querySelectorAll('#handoff-timeline .phase-time').forEach((node) => {
+    node.textContent = node.dataset.time === 'issued' ? '0 мс' : '—';
+  });
+  if (els.handoffTelemetry) {
+    els.handoffTelemetry.classList.remove('is-done');
+    els.handoffTelemetry.textContent = 'Билет выпущен · ожидаем подключение';
+  }
+  if (els.qrBar) {
+    els.qrBar.classList.remove('is-low', 'is-done');
+    els.qrBar.style.width = '100%';
+  }
+  els.modal.querySelector('.modal-card')?.classList.remove('is-complete');
+}
+
+function handoffComplete(deviceName) {
+  if (state.handoffClosing) return;
+  state.handoffClosing = true;
+  const elapsedMs = state.handoffIssuedAt ? Date.now() - state.handoffIssuedAt : null;
+  const elapsedText =
+    elapsedMs === null ? '' : elapsedMs < 1000 ? `${Math.round(elapsedMs)} мс` : `${(elapsedMs / 1000).toFixed(2).replace('.', ',')} с`;
+  setHandoffPhase('complete');
+  phaseTime('scanned', '✓');
+  phaseTime('stepup', '✓');
+  if (elapsedMs !== null) phaseTime('restored', elapsedText);
+  els.handoffStatus.textContent = deviceName ? `Подключено: ${deviceName}` : 'Телефон подключён';
+  if (els.handoffTelemetry) {
+    els.handoffTelemetry.classList.add('is-done');
+    els.handoffTelemetry.textContent = elapsedMs
+      ? `Переход выполнен за ${elapsedText} · шаг, фокус и позиция курсора восстановлены`
+      : 'Переход выполнен · шаг, фокус и позиция курсора восстановлены';
+  }
+  if (els.qrBar) {
+    els.qrBar.classList.remove('is-low');
+    els.qrBar.classList.add('is-done');
+    els.qrBar.style.width = '100%';
+  }
+  els.handoffTimer.textContent = '✓';
+  els.modal.querySelector('.modal-card')?.classList.add('is-complete');
+  clearInterval(state.handoffTimer);
+  clearInterval(state.handoffPoll);
+  setTimeout(() => closeHandoff(false), 1400);
+}
+
+function startHandoffCountdown(expiresAt, ttlSec = 90) {
   clearInterval(state.handoffTimer);
   const deadline = new Date(expiresAt).getTime();
+  const totalMs = Math.max(1000, (ttlSec || 90) * 1000);
   const tick = () => {
     const left = Math.max(0, deadline - Date.now());
     const total = Math.ceil(left / 1000);
     const mm = String(Math.floor(total / 60)).padStart(2, '0');
     const ss = String(total % 60).padStart(2, '0');
     els.handoffTimer.textContent = `${mm}:${ss}`;
+    setRingProgress(left / totalMs);
     if (left <= 0) {
       clearInterval(state.handoffTimer);
       clearInterval(state.handoffPoll);
       els.qrExpired.classList.remove('hidden');
       els.handoffStatus.textContent = 'Срок действия кода истёк';
+      if (els.handoffTelemetry) els.handoffTelemetry.textContent = 'Билет истёк · выпустите новый код';
     }
   };
   tick();
@@ -1090,13 +1156,11 @@ function startHandoffCountdown(expiresAt) {
 }
 
 async function checkHandoffStatus() {
-  if (!state.handoff) return;
+  if (!state.handoff || state.handoffClosing) return;
   try {
     const data = await api(`/handoff/${state.handoff.ticketId}/status`);
     if (data.status === 'redeemed') {
-      setHandoffPhase('complete');
-      els.handoffStatus.textContent = `Телефон подключён: ${data.redeemedBy}`;
-      setTimeout(() => closeHandoff(false), 850);
+      handoffComplete(data.redeemedBy);
       toast(`Телефон подключён: ${data.redeemedBy}`);
     }
   } catch {
@@ -1299,6 +1363,17 @@ $('#btn-submit').addEventListener('click', submitDraft);
 $('#btn-refresh-ticket').addEventListener('click', () => {
   els.qrExpired.classList.add('hidden');
   openHandoff();
+});
+
+els.btnDemoPhone?.addEventListener('click', () => {
+  if (!state.handoff) return;
+  const url = `/m?code=${encodeURIComponent(state.handoff.code)}`;
+  window.open(url, '_blank', 'noopener');
+  els.handoffStatus.textContent = 'Демо-телефон открыт · подтвердите Face ID';
+  if (els.handoffTelemetry) {
+    els.handoffTelemetry.textContent = 'Демо-телефон открыт · подтвердите Face ID (PIN 0000)';
+  }
+  toast('Демо-телефон открыт в новой вкладке: подтвердите Face ID / PIN 0000');
 });
 
 $$('[data-close-modal]').forEach((element) => {
