@@ -53,6 +53,12 @@
 |---|---|---|
 | ![Hero](docs/screens/06-hero-live-handoff.png) | ![Handoff](docs/screens/07-handoff-live-modal.png) | ![After](docs/screens/08-web-after-handoff.png) |
 
+Страница возможностей и проверка получателя:
+
+| Проверка получателя | Живые метрики | В форме перевода |
+|---|---|---|
+| ![VoP](docs/screens/10-product-vop.png) | ![Metrics](docs/screens/11-product-metrics.png) | ![Payee](docs/screens/12-payee-check.png) |
+
 ## Быстрый старт
 
 ```bash
