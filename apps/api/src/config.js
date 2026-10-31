@@ -7,6 +7,7 @@ export const config = {
   port: Number(process.env.PORT || 8787),
   host: process.env.HOST || '0.0.0.0',
   redisUrl: process.env.REDIS_URL || '',
+  stateFile: process.env.STATE_FILE || '',
   jwtSecret: process.env.JWT_SECRET || 'dev-only-secret-change-in-production',
   accessTtlSec: Number(process.env.ACCESS_TTL_SEC || 3600),
   ticketTtlSec: Number(process.env.TICKET_TTL_SEC || 90),

@@ -974,6 +974,7 @@ function handleEvent(message) {
   const payload = message.payload || {};
   const myDevice = state.session?.deviceId;
   if (message.type === 'draft.updated') {
+    if (payload.process) renderProcess(payload.process);
     const draft = payload.draft;
     if (!draft || draft.id !== state.draft?.id) return;
     state.draft = { ...state.draft, ...draft };
@@ -990,7 +991,9 @@ function handleEvent(message) {
   }
 
   if (message.type === 'handoff.redeemed') {
-    handoffComplete(payload.deviceName);
+    handoffComplete(payload.deviceName, payload.timing || {});
+    if (payload.process) renderProcess(payload.process);
+    loadDrafts();
     const draft = payload.draft;
     if (draft && draft.id === state.draft?.id) {
       state.draft = { ...state.draft, ...draft };
@@ -1103,22 +1106,32 @@ function resetHandoffTimeline() {
   els.modal.querySelector('.modal-card')?.classList.remove('is-complete');
 }
 
-function handoffComplete(deviceName) {
+function handoffComplete(deviceName, timing = {}) {
   if (state.handoffClosing) return;
   state.handoffClosing = true;
   const elapsedMs = state.handoffIssuedAt ? Date.now() - state.handoffIssuedAt : null;
   const elapsedText =
     elapsedMs === null ? '' : elapsedMs < 1000 ? `${Math.round(elapsedMs)} мс` : `${(elapsedMs / 1000).toFixed(2).replace('.', ',')} с`;
+  const syncMs = Number.isFinite(timing?.syncMs) ? Math.max(0, Math.round(timing.syncMs)) : null;
+  const redeemMs = Number.isFinite(timing?.redeemMs) ? Math.max(0, Math.round(timing.redeemMs)) : null;
+  const shortMs = (value) =>
+    value < 1 ? '<1 мс' : value < 1000 ? `${value} мс` : `${(value / 1000).toFixed(1).replace('.', ',')} с`;
   setHandoffPhase('complete');
-  phaseTime('scanned', '✓');
+  phaseTime('scanned', syncMs === null ? '✓' : shortMs(syncMs));
   phaseTime('stepup', '✓');
-  if (elapsedMs !== null) phaseTime('restored', elapsedText);
+  phaseTime('restored', '✓');
   els.handoffStatus.textContent = deviceName ? `Подключено: ${deviceName}` : 'Телефон подключён';
   if (els.handoffTelemetry) {
     els.handoffTelemetry.classList.add('is-done');
-    els.handoffTelemetry.textContent = elapsedMs
-      ? `Переход выполнен за ${elapsedText} · шаг, фокус и позиция курсора восстановлены`
+    const parts = [];
+    if (redeemMs !== null) parts.push(`сервер: ${shortMs(redeemMs)}`);
+    if (syncMs !== null) parts.push(`до подключения: ${shortMs(syncMs)}`);
+    if (elapsedText && syncMs === null) parts.push(`полный цикл: ${elapsedText}`);
+    els.handoffTelemetry.textContent = parts.length
+      ? `Переход выполнен · ${parts.join(' · ')}`
       : 'Переход выполнен · шаг, фокус и позиция курсора восстановлены';
+    els.handoffTelemetry.title =
+      'Сервер — обработка подхвата и восстановления черновика; до подключения — от выпуска билета до Face ID';
   }
   if (els.qrBar) {
     els.qrBar.classList.remove('is-low');
@@ -1160,7 +1173,10 @@ async function checkHandoffStatus() {
   try {
     const data = await api(`/handoff/${state.handoff.ticketId}/status`);
     if (data.status === 'redeemed') {
-      handoffComplete(data.redeemedBy);
+      handoffComplete(data.redeemedBy, {
+        syncMs: data.serverSyncMs,
+        redeemMs: data.serverRedeemMs,
+      });
       toast(`Телефон подключён: ${data.redeemedBy}`);
     }
   } catch {

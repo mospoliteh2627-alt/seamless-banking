@@ -352,7 +352,11 @@ export async function buildApp(options = {}) {
   });
 
   app.decorate('config', cfg);
-  const store = await createStore({ redisUrl: options.redisUrl ?? cfg.redisUrl, logger: app.log });
+  const store = await createStore({
+    redisUrl: options.redisUrl ?? cfg.redisUrl,
+    stateFile: options.stateFile ?? cfg.stateFile,
+    logger: app.log,
+  });
   app.decorate('store', store);
   const metrics = new Metrics();
   app.decorate('metrics', metrics);
@@ -764,6 +768,7 @@ export async function buildApp(options = {}) {
     await store.publish(auth.sub, 'draft.updated', {
       draft: outcome.draft,
       updatedBy: deviceOf(auth),
+      process: processView(outcome.draft),
     });
     metrics.inc('patches');
     metrics.observeSync(Date.now() - startedAt);
@@ -1036,7 +1041,8 @@ export async function buildApp(options = {}) {
     }
     if (body.code) await store.deleteCode(String(body.code));
 
-    const at = iso();
+    const redeemedAtMs = Date.now();
+    const at = iso(redeemedAtMs);
     const outcome = await store.updateDraft(
       data.opId,
       (draft) => {
@@ -1067,6 +1073,9 @@ export async function buildApp(options = {}) {
       deviceName: auth.deviceName,
       channel: auth.channel,
       at,
+      issuedAt: data.createdAt,
+      syncMs: redeemedAtMs - data.createdAt,
+      redeemMs: redeemedAtMs - startedAt,
     });
     metrics.inc('handoffsRedeemed');
     metrics.observeHandoff(Date.now() - data.createdAt);
@@ -1078,6 +1087,8 @@ export async function buildApp(options = {}) {
       deviceId: auth.deviceId,
       at,
       draft: outcome.draft,
+      process: processView(outcome.draft),
+      timing: { syncMs: redeemedAtMs - data.createdAt, redeemMs: redeemedAtMs - startedAt },
     });
     return {
       draft: draftView(outcome.draft, auth),
@@ -1097,7 +1108,15 @@ export async function buildApp(options = {}) {
     const redeemed = await store.getRedeemed(jti);
     if (redeemed) {
       if (redeemed.userId !== auth.sub) throw new HttpError(403, 'FORBIDDEN', 'Нет доступа');
-      return { status: 'redeemed', redeemedBy: redeemed.deviceName, at: redeemed.at, opId: redeemed.opId };
+      return {
+        status: 'redeemed',
+        redeemedBy: redeemed.deviceName,
+        at: redeemed.at,
+        opId: redeemed.opId,
+        issuedAt: redeemed.issuedAt ? iso(redeemed.issuedAt) : null,
+        serverSyncMs: Number.isFinite(redeemed.syncMs) ? redeemed.syncMs : null,
+        serverRedeemMs: Number.isFinite(redeemed.redeemMs) ? redeemed.redeemMs : null,
+      };
     }
     const ticket = await store.getTicket(jti);
     if (ticket) {

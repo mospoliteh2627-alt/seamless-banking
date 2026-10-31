@@ -1,4 +1,6 @@
 import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
 import { EventEmitter } from 'node:events';
 import Redis from 'ioredis';
 
@@ -40,8 +42,10 @@ function alive(record) {
 }
 
 class MemoryStore {
-  constructor() {
-    this.kind = 'memory';
+  constructor({ stateFile = '' } = {}) {
+    this.kind = stateFile ? 'memory+disk' : 'memory';
+    this.stateFile = stateFile;
+    this.persistTimer = null;
     this.sessions = new Map();
     this.drafts = new Map();
     this.tickets = new Map();
@@ -65,6 +69,108 @@ class MemoryStore {
         }
       }
     });
+    if (this.stateFile) {
+      this.restoreState();
+      this.wrapPersistence();
+    }
+  }
+
+  /* Демо-персистентность: снимок памяти на диск, чтобы черновики
+     переживали перезапуск без Redis/Docker. */
+  wrapPersistence() {
+    const methods = [
+      'setSession',
+      'putDraft',
+      'putRecipient',
+      'deleteRecipient',
+      'putIdempotency',
+      'putTicket',
+      'consumeTicket',
+      'putCode',
+      'deleteCode',
+      'markRedeemed',
+      'appendAudit',
+      'appendResearch',
+    ];
+    for (const name of methods) {
+      const original = this[name].bind(this);
+      this[name] = (...args) => {
+        const result = original(...args);
+        if (result && typeof result.then === 'function') {
+          return result.then((value) => {
+            this.persistState();
+            return value;
+          });
+        }
+        this.persistState();
+        return result;
+      };
+    }
+  }
+
+  persistState() {
+    if (!this.stateFile || this.persistTimer) return;
+    this.persistTimer = setTimeout(() => {
+      this.persistTimer = null;
+      this.writeState();
+    }, 250);
+    this.persistTimer.unref?.();
+  }
+
+  writeState() {
+    if (!this.stateFile) return;
+    const snapshot = {
+      v: 1,
+      at: new Date().toISOString(),
+      sessions: [...this.sessions],
+      drafts: [...this.drafts],
+      tickets: [...this.tickets],
+      codes: [...this.codes],
+      redeemed: [...this.redeemed],
+      recipients: [...this.recipients],
+      idempotency: [...this.idempotency],
+      audit: this.audit,
+      research: this.research,
+    };
+    try {
+      fs.mkdirSync(path.dirname(this.stateFile), { recursive: true });
+      const tmp = `${this.stateFile}.tmp`;
+      fs.writeFileSync(tmp, JSON.stringify(snapshot));
+      fs.renameSync(tmp, this.stateFile);
+    } catch {
+      /* диск недоступен — демо продолжает работать в памяти */
+    }
+  }
+
+  restoreState() {
+    try {
+      if (!fs.existsSync(this.stateFile)) return;
+      const data = JSON.parse(fs.readFileSync(this.stateFile, 'utf8'));
+      const restore = (key, target) => {
+        const entries = Array.isArray(data[key]) ? data[key] : [];
+        for (const [id, record] of entries) {
+          if (record && (record.exp === 0 || record.exp > now())) target.set(id, record);
+        }
+      };
+      restore('sessions', this.sessions);
+      restore('drafts', this.drafts);
+      restore('tickets', this.tickets);
+      restore('codes', this.codes);
+      restore('redeemed', this.redeemed);
+      restore('recipients', this.recipients);
+      restore('idempotency', this.idempotency);
+      this.audit = Array.isArray(data.audit) ? data.audit : [];
+      this.research = Array.isArray(data.research) ? data.research : [];
+      this.userDrafts = new Map();
+      for (const [id, record] of this.drafts) {
+        const draft = record?.v;
+        if (!draft?.userId) continue;
+        if (!this.userDrafts.has(draft.userId)) this.userDrafts.set(draft.userId, new Set());
+        this.userDrafts.get(draft.userId).add(id);
+      }
+    } catch {
+      /* повреждённый снимок игнорируем — стартуем с чистого состояния */
+    }
   }
 
   async connect() {
@@ -74,6 +180,11 @@ class MemoryStore {
   async close() {
     this.handlers.clear();
     this.bus.removeAllListeners();
+    if (this.persistTimer) {
+      clearTimeout(this.persistTimer);
+      this.persistTimer = null;
+    }
+    this.writeState();
   }
 
   subscribe(handler) {
@@ -510,7 +621,7 @@ class RedisStore {
   }
 }
 
-export async function createStore({ redisUrl, logger } = {}) {
+export async function createStore({ redisUrl, stateFile = '', logger } = {}) {
   if (redisUrl) {
     try {
       const store = await new RedisStore(redisUrl).connect();
@@ -520,6 +631,7 @@ export async function createStore({ redisUrl, logger } = {}) {
       logger?.warn({ err: error.message }, 'redis unavailable, falling back to in-memory store');
     }
   }
-  logger?.info('state store: in-memory (demo mode)');
-  return new MemoryStore().connect();
+  if (stateFile) logger?.info({ stateFile }, 'state store: in-memory + disk snapshot');
+  else logger?.info('state store: in-memory (demo mode)');
+  return new MemoryStore({ stateFile }).connect();
 }

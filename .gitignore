@@ -28,4 +28,6 @@ apps/mobile/ios/Flutter/flutter_export_environment.sh
 apps/mobile/ios/Runner.xcworkspace/xcuserdata/
 apps/mobile/ios/Runner.xcodeproj/xcuserdata/
 .demo.pid
+.demo-state.json
+.demo-state.json.tmp
 .demo.log
