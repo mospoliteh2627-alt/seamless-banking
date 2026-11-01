@@ -30,5 +30,18 @@ jobs:
             printf '%-14s ' "$path"
             curl -s -o /dev/null -w '%{http_code}\n' --max-time 60 "$URL$path"
           done
+          echo "--- content markers ---"
+          curl -s --max-time 60 "$URL/" -o /tmp/index.html
+          for marker in 'scroll-top.js' '/product.html' 'guide-trigger' 'Как это работает'; do
+            if grep -q "$marker" /tmp/index.html; then echo "index: OK  $marker"; else echo "index: OLD $marker"; fi
+          done
+          for asset in /scroll-top.js /product.html /v2.css /app.js; do
+            code=$(curl -s -o /tmp/asset -w '%{http_code}' --max-time 60 "$URL$asset")
+            printf '%-14s %s %s bytes\n' "$asset" "$code" "$(wc -c < /tmp/asset)"
+          done
+          echo "app.js version: $(curl -s --max-time 60 "$URL/app.js" | grep -o "2026\.10\.31" | head -1)"
+          echo "v2.css guide rules: $(curl -s --max-time 60 "$URL/v2.css" | grep -c "guide-trigger")"
+          echo "--- headers ---"
+          curl -sI --max-time 60 "$URL/" | grep -iE 'etag|last-modified|age|cache-control|server' || true
           echo "--- metrics ---"
-          curl -s --max-time 60 "$URL/v1/metrics" | head -c 500
+          curl -s --max-time 60 "$URL/v1/metrics" | head -c 400
