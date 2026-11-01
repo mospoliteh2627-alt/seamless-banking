@@ -1,0 +1,29 @@
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    # наружу не публикуем
+
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    environment:
+      PORT: "8787"
+      HOST: "0.0.0.0"
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      TICKET_TTL_SEC: "90"
+      LEASE_TTL_MS: "30000"
+    ports:
+      - "127.0.0.1:8787:8787"
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  redis-data:
