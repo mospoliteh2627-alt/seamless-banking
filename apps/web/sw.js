@@ -1,4 +1,4 @@
-const CACHE = 'vector-bank-shell-v5';
+const CACHE = 'vector-bank-shell-v6';
 const SHELL = [
   '/',
   '/index.html',
@@ -6,6 +6,8 @@ const SHELL = [
   '/v2.css',
   '/app.js',
   '/landing-demo.js',
+  '/scroll-top.js',
+  '/product.html',
   '/icon.svg',
   '/manifest.webmanifest',
 ];

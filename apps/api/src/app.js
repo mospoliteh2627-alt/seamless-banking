@@ -463,6 +463,14 @@ export async function buildApp(options = {}) {
     prefix: '/',
     index: ['index.html'],
     cacheControl: false,
+    setHeaders(response, filePath) {
+      if (String(filePath).endsWith('.html')) {
+        response.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+        response.setHeader('Pragma', 'no-cache');
+      } else {
+        response.setHeader('Cache-Control', 'public, max-age=300, must-revalidate');
+      }
+    },
   });
 
   /* ------------------------- аутентификация ------------------------ */
@@ -559,6 +567,7 @@ export async function buildApp(options = {}) {
   app.get('/v1/health', async () => ({
     status: 'ok',
     service: 'seamless-banking-api',
+    release: '2026.11.01',
     store: store.kind,
     time: iso(),
   }));

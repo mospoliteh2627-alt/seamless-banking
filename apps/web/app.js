@@ -1,7 +1,7 @@
 /* global crypto, navigator, location */
 
 const API_PREFIX = '/v1';
-const UI_VERSION = '2026.10.31';
+const UI_VERSION = '2026.11.01';
 document.documentElement.dataset.uiVersion = UI_VERSION;
 console.info(`Vector Bank UI ${UI_VERSION}`);
 

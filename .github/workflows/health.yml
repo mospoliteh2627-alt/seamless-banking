@@ -39,9 +39,10 @@ jobs:
             code=$(curl -s -o /tmp/asset -w '%{http_code}' --max-time 60 "$URL$asset")
             printf '%-14s %s %s bytes\n' "$asset" "$code" "$(wc -c < /tmp/asset)"
           done
-          echo "app.js version: $(curl -s --max-time 60 "$URL/app.js" | grep -o "2026\.10\.31" | head -1)"
+          echo "app.js version: $(curl -s --max-time 60 "$URL/app.js" | grep -o "2026\.11\.01" | head -1)"
           echo "v2.css guide rules: $(curl -s --max-time 60 "$URL/v2.css" | grep -c "guide-trigger")"
           echo "--- headers ---"
-          curl -sI --max-time 60 "$URL/" | grep -iE 'etag|last-modified|age|cache-control|server' || true
+          curl -sI --max-time 60 "$URL/" | grep -iE 'etag|last-modified|age|cache-control|server|cf-cache-status' || true
+          echo "health release: $(curl -s --max-time 60 "$URL/v1/health")"
           echo "--- metrics ---"
           curl -s --max-time 60 "$URL/v1/metrics" | head -c 400
