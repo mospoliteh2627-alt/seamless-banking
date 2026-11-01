@@ -1,0 +1,34 @@
+name: live-health
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Wake Render and check endpoints
+        run: |
+          set -u
+          URL="https://seamless-banking.onrender.com"
+          code="000"
+          for i in $(seq 1 15); do
+            code=$(curl -s -o /tmp/health -w '%{http_code}' --max-time 60 "$URL/v1/health" || true)
+            echo "attempt $i: HTTP $code"
+            cat /tmp/health 2>/dev/null; echo
+            [ "$code" = "200" ] && break
+            sleep 8
+          done
+          if [ "$code" != "200" ]; then
+            echo "health check failed" >&2
+            exit 1
+          fi
+          for path in / /product.html /guide.html /m /research; do
+            printf '%-14s ' "$path"
+            curl -s -o /dev/null -w '%{http_code}\n' --max-time 60 "$URL$path"
+          done
+          echo "--- metrics ---"
+          curl -s --max-time 60 "$URL/v1/metrics" | head -c 500
